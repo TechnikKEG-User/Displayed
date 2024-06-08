@@ -3,11 +3,11 @@
 > An all-in-one digital signage solution intended to present a slideshow of
 > images and websites
 
-<hr />
-[![Badge](https://img.shields.io/badge/https://img.shields.io/badge/Org-KEG_Amorbach-blue)](https://amorgym.de)
-![Badge](![GitHub Release](https://img.shields.io/github/v/release/TechnikKEG/Displayed))
-[![Badge](https://img.shields.io/badge/https://img.shields.io/badge/License-MIT-blue)](https://github.com/TechnikKEG/Displayed/blob/master/LICENSE)
-<hr />
+[![Badge](https://img.shields.io/badge/org-KEG_Amorbach-blue)](https://amorgym.de)
+[![Badge](https://img.shields.io/github/v/release/TechnikKEG/Displayed)](https://github.com/TechnikKEG/Displayed/releases/latest)
+[![Badge](https://img.shields.io/badge/license-MIT-blue)](https://github.com/TechnikKEG/Displayed/blob/master/LICENSE)
+
+---
 
 ## Motivation
 

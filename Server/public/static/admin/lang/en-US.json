@@ -1,6 +1,15 @@
 {
     "main": {
-        "readonly": "Read-only"
+        "readonly": "Read-only",
+
+        "source": "Source",
+        "cloud": "Cloud",
+        "remote": "Remote",
+
+        "url": "URL",
+        "timing": "Duration (sec)",
+
+        "ask_delete": "Do you really want to delete this entry (type: {type})?\nTarget: {target}"
     },
     "sidebar": {
         "info": "{num} device(s)"

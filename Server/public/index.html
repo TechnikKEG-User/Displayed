@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manage | Displayed</title>
+        <script type="module" src="static/admin/js/index.js" defer></script>
+        <link rel="stylesheet" href="static/admin/css/main.css" />
+    </head>
+    <body>
+        <div id="app">
+            <div id="app-main">
+                <div id="sidebar">
+                    <div id="sidebar-title">Displayed</div>
+                    <div id="sidebar-content"></div>
+                    <div id="sidebar-footer">
+                        <div id="add-group" class="icon">playlist_add</div>
+                        <div id="logout" class="icon">logout</div>
+                        <div id="settings" class="icon">settings</div>
+                        <!-- <div id="change-password" class="icon">
+                            manage_accounts
+                        </div> -->
+                    </div>
+                </div>
+                <div id="main">
+                    <div id="main-header">
+                        <div id="main-header-title"></div>
+                        <div id="main-header-status"></div>
+                    </div>
+                    <div id="main-slides">
+                        <div class="main-slide" data-type="cloud">
+                            <div class="main-slide-content">
+                                <div class="main-slide-delete icon">delete</div>
+                                <div class="main-slide-type-selector">
+                                    <div class="main-slide-type-selector-info">
+                                        Source
+                                    </div>
+                                    <div
+                                        class="main-slide-type-selector-field"
+                                        data-type="cloud"
+                                    >
+                                        Cloud
+                                    </div>
+                                    <div
+                                        class="main-slide-type-selector-field"
+                                        data-type="remote"
+                                    >
+                                        Remote
+                                    </div>
+                                </div>
+                                <div class="main-slide-type-cloud">
+                                    <div class="main-slide-type-cloud-path">
+                                        OGS/img1.jpeg
+                                    </div>
+                                    <div
+                                        class="main-slide-type-cloud-picker icon"
+                                    >
+                                        folder
+                                    </div>
+                                </div>
+                                <div class="main-slide-type-remote">
+                                    <div class="main-slide-type-remote-label">
+                                        URL
+                                    </div>
+                                    <input
+                                        type="text"
+                                        class="main-slide-type-remote-url"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="app-groupadd"></div>
+        </div>
+    </body>
+</html>

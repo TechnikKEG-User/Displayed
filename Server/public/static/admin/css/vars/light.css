@@ -1,0 +1,19 @@
+:root {
+    --text-color: #001e24;
+    --text-color-gray: #475558;
+    --text-color-extreme: #000000;
+
+    --background-color: #f0fcff;
+    --accent-color: #2d8fa3;
+
+    --background-shade: #001e240f;
+    --background-shade-selected: #2d8fa348;
+
+    --drop-shadow: drop-shadow(0px 0px 2px #000000);
+    --drop-shadow-selected: drop-shadow(0px 0px 2px var(--accent-color));
+
+    --border-color: #a3abad;
+    --border-color-light: #cfd5d6;
+    --border-color-selected: var(--accent-color);
+    --border-layer: 0px solid transparent;
+}

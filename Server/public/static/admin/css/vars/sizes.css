@@ -1,0 +1,18 @@
+:root {
+    --title-size: 1.6em;
+    --title-weight: 500;
+
+    --text-bigger-size: 1.28em;
+    --text-big-size: 1.15em;
+    --text-normal-size: 1em;
+    --text-small-size: 0.85em;
+    --text-smaller-size: 0.75em;
+
+    --icon-font-size: 2em;
+
+    --border-width: 0.15em;
+    --border-radius: 0.5em;
+
+    --padding-layer: 0.5em;
+    --padding-small: 0.2em;
+}

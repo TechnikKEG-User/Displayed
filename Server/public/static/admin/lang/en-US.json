@@ -1,0 +1,14 @@
+{
+    "main": {
+        "readonly": "Read-only"
+    },
+    "sidebar": {
+        "info": "{num} device(s)"
+    },
+    "group": {
+        "default": "Default",
+        "create_name_prompt": "Please enter a name for the group:",
+        "error_creating": "Error while creating group: {error}",
+        "successfully_created": "Successfully created group '{name}'!"
+    }
+}

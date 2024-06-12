@@ -6,7 +6,7 @@ import {
     getLanguageData,
     initLanguage,
 } from "./lang.js";
-import { loadGroup } from "./main.js";
+import { initMain, loadGroup } from "./main.js";
 import { generateSidebar, initSidebar, selectSidebarGroup } from "./sidebar.js";
 
 window.currentGroup = DEFAULT_GROUP_ID;
@@ -15,6 +15,10 @@ window.meta = {};
 window.addEventListener(EVENTS.groupSelect, (e) => {
     window.currentGroup = e.detail.uuid;
     loadGroup(window.currentGroup);
+});
+
+window.addEventListener(EVENTS.reload, () => {
+    load();
 });
 
 async function load() {
@@ -43,6 +47,7 @@ async function init() {
     await initLanguage();
     await fetchCurrentLanguage();
 
+    initMain();
     initSidebar();
 
     await load();

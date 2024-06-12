@@ -1,6 +1,15 @@
 {
     "main": {
-        "readonly": "Schreibgeschützt"
+        "readonly": "Schreibgeschützt",
+
+        "source": "Quelle",
+        "cloud": "Cloud",
+        "remote": "Extern",
+
+        "url": "URL",
+        "timing": "Dauer (s)",
+
+        "ask_delete": "Möchten Sie diesen Eintrag (Typ: {type}) wirklich löschen?\nZiel: {target}"
     },
     "sidebar": {
         "info": "{num} Gerät(e)"

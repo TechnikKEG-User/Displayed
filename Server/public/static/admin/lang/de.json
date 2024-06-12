@@ -1,0 +1,14 @@
+{
+    "main": {
+        "readonly": "Schreibgeschützt"
+    },
+    "sidebar": {
+        "info": "{num} Gerät(e)"
+    },
+    "group": {
+        "default": "Standard",
+        "create_name_prompt": "Bitte geben Sie den Namen der Gruppe ein:",
+        "error_creating": "Fehler beim Erstellen der Gruppe: {error}",
+        "successfully_created": "Gruppe '{name}' erfolgreich erstellt!"
+    }
+}

@@ -254,6 +254,7 @@ app.put("/api/view/currUrl", (req, res) => {
     }
     conf.refs[mac].preview = url;
     storage.save(conf);
+    res.send("OK");
 })
 
 /**

@@ -16,8 +16,33 @@
     },
     "group": {
         "default": "Default",
+        "justwork": "Just Work",
         "create_name_prompt": "Please enter a name for the group:",
         "error_creating": "Error while creating group: {error}",
         "successfully_created": "Successfully created group '{name}'!"
+    },
+    "justwork": {
+        "duration": "General duration of each slide (sec)",
+        "folder": "Subfolder whose images should be used"
+    },
+    "login":{
+        "title": "Login",
+        "username": "Username",
+        "password": "Password",
+        "change_password": "Change password",
+        "old_password": "Old password",
+        "new_password": "New password",
+        "confirm_password": "Confirm password",
+        "login": "Login",
+        "error": "Error while logging in: {error}"
+    },
+    "explorer":{
+        "title": "File Explorer",
+        "select_file": "Select file",
+        "select_dir": "Select directory",
+        "select_file_error": "Please select a file!",
+        "select_dir_error": "Please select a directory!",
+        "cancel": "Cancel"
     }
+
 }

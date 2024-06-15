@@ -44,6 +44,19 @@ function showUrl(url) {
     );
 }
 
+function isLinkText(url) {
+    if (url.endsWith(".link.txt")) {
+        return true;
+    }
+    if (url.endsWith(".linktxt")) {
+        return true;
+    }
+    if (url.endsWith(".link")) {
+        return true;
+    }
+    return false;
+}
+
 async function interval() {
     if (Date.now() > nextMetaRefetch) {
         try {
@@ -79,6 +92,10 @@ async function interval() {
             );
 
             showUrl(getImagePage(contentB64, url.split(".").pop()));
+        } else if (isLinkText(url)) {
+            const res = await fetch(url);
+            const text = await res.text();
+            showUrl(text);
         } else {
             showUrl(url);
         }

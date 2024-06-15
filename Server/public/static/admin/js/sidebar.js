@@ -1,4 +1,4 @@
-import { DEFAULT_GROUP_ID, EVENTS, SERVER_ENDPOINTS } from "./constants.js";
+import { DEFAULT_GROUP_ID, JUST_WORK_GROUP_ID, EVENTS, SERVER_ENDPOINTS } from "./constants.js";
 import {
     addGroup_icon,
     logout_icon,
@@ -19,7 +19,7 @@ export function generateSidebarGroup(name, uuid, devCount) {
 
     const title = document.createElement("div");
     title.classList.add("sidebar-group-title");
-    title.innerText = uuid == DEFAULT_GROUP_ID ? lang.group.default : name;
+    title.innerText = uuid == DEFAULT_GROUP_ID ? lang.group.default : (uuid == JUST_WORK_GROUP_ID ? lang.group.justwork : name);
 
     const info = document.createElement("div");
     info.classList.add("sidebar-group-info");

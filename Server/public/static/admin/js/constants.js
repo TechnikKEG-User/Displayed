@@ -1,4 +1,5 @@
-export const DEFAULT_GROUP_ID = "DEFAULT";
+export const DEFAULT_GROUP_ID = "fd1b53aa-5f24-4c9a-9ce5-29108df75bf0";
+export const JUST_WORK_GROUP_ID = "2f284bc9-30a4-4a5f-8527-7e8a40358144";
 
 export const SERVER_ENDPOINTS = {
     data: "/api/admin/alldata.json",

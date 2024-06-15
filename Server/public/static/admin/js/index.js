@@ -1,5 +1,7 @@
+import { changePasswordShow } from "./changePassword.js";
 import { DEFAULT_GROUP_ID, EVENTS, SERVER_ENDPOINTS } from "./constants.js";
 import { mainHeaderStatus_e } from "./elements.js";
+import { initExplorer, selectFileInUI } from "./explorer.js";
 import {
     fetchCurrentLanguage,
     formatString,
@@ -49,7 +51,8 @@ async function init() {
 
     initMain();
     initSidebar();
-
+    initExplorer();
+    //setTimeout(()=>  selectFileInUI((path)=>{console.log(path)}),100);
     await load();
 }
 

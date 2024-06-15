@@ -16,8 +16,32 @@
     },
     "group": {
         "default": "Standard",
+        "justwork": "\"Funktioniert Einfach\"",
         "create_name_prompt": "Bitte geben Sie den Namen der Gruppe ein:",
         "error_creating": "Fehler beim Erstellen der Gruppe: {error}",
         "successfully_created": "Gruppe '{name}' erfolgreich erstellt!"
+    },
+    "justwork": {
+        "duration": "Generelle Dauer jeder Folie (s)",
+        "folder": "Unterordner dessen Bilder benutzt werden sollen"
+    },
+    "login":{
+        "title": "Anmeldung",
+        "username": "Benutzername",
+        "password": "Passwort",
+        "change_password": "Passwort ändern",
+        "old_password": "Altes Passwort",
+        "new_password": "Neues Passwort",
+        "confirm_password": "Passwort wiederholen",
+        "login": "Anmelden",
+        "error": "Fehler beim Anmelden: {error}"
+    },
+    "explorer":{
+        "title": "Datei Explorer",
+        "select_file": "Datei auswählen",
+        "select_dir": "Ordner auswählen",
+        "select_file_error": "Bitte wählen Sie eine Datei aus!",
+        "select_dir_error": "Bitte wählen Sie einen Ordner aus!",
+        "cancel": "Abbrechen"
     }
 }

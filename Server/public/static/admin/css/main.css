@@ -43,6 +43,7 @@ body {
 /* -------------------------------------------------------------------------- */
 
 input,
+button,
 select {
     font-family: inherit;
     font-size: var(--text-normal-size);
@@ -66,16 +67,34 @@ select:focus {
 /* -------------------------------------------------------------------------- */
 /*                                 Main layout                                */
 /* -------------------------------------------------------------------------- */
+#app-groupadd {
+    display: none;
+}
 
 #app-main {
     display: flex;
     flex-direction: row;
     height: 100vh;
+
 }
 
-#app-main > * {
+#app-main>* {
     padding: 0.8em;
     box-sizing: border-box;
+}
+
+.app-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    background-color: var(--background-color);
+    z-index: 100;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 #sidebar {
@@ -99,6 +118,18 @@ select:focus {
 /* -------------------------------------------------------------------------- */
 /*                                   Sidebar                                  */
 /* -------------------------------------------------------------------------- */
+
+#main-read-only-overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 300px;
+    background-color: rgba(0, 0, 0, 0);
+    z-index: 100;
+
+}
+
 
 #sidebar-title {
     color: var(--text-color-extreme);
@@ -244,10 +275,8 @@ select:focus {
     font-size: var(--text-big-size);
 }
 
-.main-slide[data-type="cloud"]
-    .main-slide-type-selector-field[data-type="cloud"],
-.main-slide[data-type="remote"]
-    .main-slide-type-selector-field[data-type="remote"] {
+.main-slide[data-type="cloud"] .main-slide-type-selector-field[data-type="cloud"],
+.main-slide[data-type="remote"] .main-slide-type-selector-field[data-type="remote"] {
     background-color: var(--background-shade-selected);
     filter: var(--drop-shadow-selected);
     border: var(--border-width) solid var(--accent-color);
@@ -317,4 +346,78 @@ select:focus {
 
 .main-slide-timing-save {
     margin-left: var(--padding-small);
+}
+
+/* --------------------------------- Login --------------------------------- */
+.login-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 100vh;
+}
+
+/* --------------------------------- Explorer ------------------------------- */
+
+#app-explorer {
+    overflow: none;
+    --explorer-header-height: 2.5em;
+    --explorer-path-height: 1.2em;
+    --explorer-offset-height: calc(var(--explorer-header-height) + var(--explorer-path-height) + 2em);
+}
+
+.explorer-file-img {
+    width: 100px;
+}
+
+#app-explorer-files {
+    position: absolute;
+    top: var(--explorer-offset-height);
+    left: 0;
+    width: 99vw;
+    padding-inline: 0.5vw;
+    height: calc(100vh - var(--explorer-offset-height));
+    display: flex;
+}
+
+#app-explorer-header {
+    height: var(--explorer-header-height);
+    width: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+
+}
+
+#app-explorer-path {
+    position: absolute;
+    top: var(--explorer-header-height);
+    left: 0.5%;
+    height: var(--explorer-path-height);
+    width: 97%;
+}
+
+.explorer-file {
+    padding: 0.5em;
+    width: 150px;
+    height: fit-content;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    text-align: center;
+}
+
+.explorer-file-marked {
+    background-color: rgba(0, 128, 255, 0.5);
+}
+
+.explorer-button {
+    font-size: 1em;
+    margin-top: 0.25em;
+    margin-left: 0.5em;
+}
+
+.explorer-float-right {
+    float: right;
 }

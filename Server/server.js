@@ -274,6 +274,7 @@ app.patch("/api/admin/setRefGroup", (req, res) => {
     if (conf.refs[req.query.ref] == undefined) { error("setRefGroup ;Ref not found! MAC: " + req.query.ref); return; }
     conf.refs[req.query.ref].group = req.query.group;
     storage.save(conf);
+    res.send("OK");
 });
 app.patch("/api/admin/setGroupName", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
@@ -281,6 +282,7 @@ app.patch("/api/admin/setGroupName", (req, res) => {
     if (conf.groups[req.query.group] == undefined) { error("setGroupName ;Group not found! UUID: " + req.query.group); return; }
     conf.groups[req.query.group].name = req.query.name;
     storage.save(conf);
+    res.send("OK");
 });
 app.patch("/api/admin/setRefName", (req, res) => {
     if (!sessionHndl.check(req, res)) return;

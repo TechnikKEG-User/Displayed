@@ -2,8 +2,6 @@
 @import url("vars/light.css") screen;
 @import url("vars/dark.css") screen and (prefers-color-scheme: dark);
 
-@import url("general.css");
-
 /* -------------------------------------------------------------------------- */
 /*                                Input styling                               */
 /* -------------------------------------------------------------------------- */
@@ -22,6 +20,8 @@ select {
     color: var(--text-color);
 
     transition: 0.15s border-color ease-in-out;
+
+    cursor: pointer;
 }
 
 input:focus,

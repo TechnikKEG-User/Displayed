@@ -20,7 +20,7 @@ const UNIT_MS = {
     MONTH: 30 * 24 * 60 * 60 * 1000,
     YEAR: 365 * 24 * 60 * 60 * 1000
 }
-const DEFAULT_EXPIRE_DATE = 5 * UNIT_MS.MINUTE;
+const DEFAULT_EXPIRE_DATE = 12 * UNIT_MS.HOUR;
 
 class SessionHndl {
     constructor() {

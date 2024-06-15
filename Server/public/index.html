@@ -1,62 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manage | Displayed</title>
+        <script type="module" src="static/admin/js/index.js" defer></script>
+        <link rel="stylesheet" href="static/admin/css/main.css" />
+    </head>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manage | Displayed</title>
-    <script type="module" src="static/admin/js/index.js" defer></script>
-    <link rel="stylesheet" href="static/admin/css/main.css" />
-</head>
-
-<body>
-    <div id="app">
-        <div id="app-main">
-            <div id="sidebar">
-                <div id="sidebar-title">Displayed</div>
-                <div id="sidebar-content"></div>
-                <div id="sidebar-footer">
-                    <div id="add-group" class="icon">playlist_add</div>
-                    <div id="logout" class="icon">logout</div>
-                    <div id="settings" class="icon">settings</div>
-                    <!-- <div id="change-password" class="icon">
+    <body>
+        <div id="app">
+            <!-- ----------------------------------------------------------------------- -->
+            <!--                                  Main                                   -->
+            <!-- ----------------------------------------------------------------------- -->
+            <div id="app-main">
+                <div id="sidebar">
+                    <div id="sidebar-title">Displayed</div>
+                    <div id="sidebar-content"></div>
+                    <div id="sidebar-footer">
+                        <div id="add-group" class="icon">playlist_add</div>
+                        <div id="logout" class="icon">logout</div>
+                        <div id="settings" class="icon">settings</div>
+                        <!-- <div id="change-password" class="icon">
                             manage_accounts
                         </div> -->
-                    <div class="icon" id="add-slide">add</div>
+                        <div class="icon" id="add-slide">add</div>
+                    </div>
+                </div>
+                <div id="main">
+                    <div id="main-read-only-overlay"></div>
+                    <div id="main-header">
+                        <div id="main-header-title"></div>
+                        <div id="main-header-status"></div>
+                    </div>
+                    <div id="main-slides"></div>
                 </div>
             </div>
-            <div id="main">
-                <div id="main-read-only-overlay"></div>
-                <div id="main-header">
-                    <div id="main-header-title"></div>
-                    <div id="main-header-status"></div>
-                </div>
-                <div id="main-slides"></div>
-            </div>
-        </div>
-        <div id="app-groupadd"></div>
-        <div id="app-changepwd" class="app-overlay" style="display: none;">
-            <h1 id="change-password-title"></h1>
-            <label for="old-password" id="old-password-label"></label>
-            <input type="password" id="old-password" />
-            <label for="new-password" id="new-password-label"></label>
-            <input type="password" id="new-password" />
-            <label for="confirm-password" id="confirm-password-label"></label>
-            <input type="password" id="confirm-password" />
-            <button id="change-password-submit"></button>
-        </div>
-        <div id="app-explorer" class="app-overlay" style="display: none;">
-            <div id="app-explorer-header"></div>
-            <input type="text" id="app-explorer-path" />
-            <div id="app-explorer-files">
-                <div class="explorer-file">
-                    <img src="/static/admin/explorer/icons/Document.png" class="explorer-file-img">
-                    <div class="explorer-file-name">Document.png</div>
-                </div>
 
+            <!-- ----------------------------------------------------------------------- -->
+            <!--                                Settings                                 -->
+            <!-- ----------------------------------------------------------------------- -->
+            <div id="app-settings" class="shown">
+                <div id="settings-left">
+                    <div id="settings-left-content">
+                        <h1 id="settings-title"></h1>
+                        <div id="settings-password">
+                            <h2 id="change-password-title"></h2>
+                            <div class="change-password-group">
+                                <label
+                                    for="old-password"
+                                    id="old-password-label"
+                                ></label>
+                                <input type="password" id="old-password" />
+                            </div>
+                            <div class="change-password-group">
+                                <label
+                                    for="new-password"
+                                    id="new-password-label"
+                                ></label>
+                                <input type="password" id="new-password" />
+                            </div>
+                            <div class="change-password-group">
+                                <label
+                                    for="confirm-password"
+                                    id="confirm-password-label"
+                                ></label>
+                                <input type="password" id="confirm-password" />
+                            </div>
+                            <button id="change-password-submit"></button>
+                        </div>
+                        <hr />
+                        <div id="settings-language">
+                            <h2 id="change-language-title"></h2>
+                            <select id="change-language-select"></select>
+                            <button id="change-language-submit"></button>
+                        </div>
+                    </div>
+                </div>
+                <div id="settings-right">
+                    <div id="settings-right-header">
+                        <div id="settings-close-icon" class="icon">close</div>
+                    </div>
+                    <div id="settings-right-content">
+                        <div class="settings-device">
+                            <div class="settings-device-content">
+                                <iframe
+                                    class="settings-device-preview"
+                                ></iframe>
+                                <div class="settings-device-info">
+                                    <div class="settings-device-name-row">
+                                        <div class="settings-device-name">
+                                            Name
+                                        </div>
+                                        <div
+                                            class="settings-device-name-change-icon icon"
+                                        >
+                                            edit
+                                        </div>
+                                    </div>
+                                    <div class="settings-device-ref">ref</div>
+                                    <div class="settings-device-sorting">
+                                        <select
+                                            class="settings-device-group-select"
+                                        ></select>
+                                        <div
+                                            class="settings-device-group-select-save icon"
+                                        >
+                                            save
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ----------------------------------------------------------------------- -->
+            <!--                                Explorer                                 -->
+            <!-- ----------------------------------------------------------------------- -->
+            <div id="app-explorer" class="app-overlay" style="display: none">
+                <div id="app-explorer-header"></div>
+                <input type="text" id="app-explorer-path" />
+                <div id="app-explorer-files">
+                    <div class="explorer-file">
+                        <img
+                            src="/static/admin/explorer/icons/Document.png"
+                            class="explorer-file-img"
+                        />
+                        <div class="explorer-file-name">Document.png</div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</body>
-
+    </body>
 </html>

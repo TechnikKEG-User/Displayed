@@ -1,4 +1,9 @@
-import { DEFAULT_GROUP_ID, EVENTS, JUST_WORK_GROUP_ID, SERVER_ENDPOINTS } from "./constants.js";
+import {
+    DEFAULT_GROUP_ID,
+    EVENTS,
+    JUST_WORK_GROUP_ID,
+    SERVER_ENDPOINTS,
+} from "./constants.js";
 import {
     addSlide_icon,
     mainHeaderStatus_e,
@@ -12,7 +17,11 @@ import { formatString, getLanguageData } from "./lang.js";
 export function loadGroup(uuid) {
     const group = window.meta.groups[uuid];
     const lang = getLanguageData();
-    Array.from(mainSlides_e.children).forEach((child) => { if (child.classList.contains("main-slide")) { child.remove() } });
+    Array.from(mainSlides_e.children).forEach((child) => {
+        if (child.classList.contains("main-slide")) {
+            child.remove();
+        }
+    });
     if (uuid == JUST_WORK_GROUP_ID) {
         mainHeaderTitle_e.innerText = lang.group.justwork;
         mainHeaderStatus_e.style.display = "none";
@@ -263,10 +272,8 @@ export function generateJustWorkSildeDurationEntry(slide) {
         });
     };
 
-
-
     timingWrapper.appendChild(timingInput);
-    timingWrapper.appendChild(timingSave)
+    timingWrapper.appendChild(timingSave);
     wrapper.appendChild(typeSelectorWrapper);
     wrapper.appendChild(timingWrapper);
 
@@ -293,10 +300,8 @@ export function generateJustWorkSildeFolderEntry(slide) {
     const timingWrapper = document.createElement("div");
     timingWrapper.classList.add("main-slide-type-cloud");
 
-
     const cloudPath = document.createElement("div");
     cloudPath.classList.add("main-slide-type-cloud-path");
-
 
     cloudPath.innerText = slide.duration;
     const cloudPath_icon = document.createElement("div");
@@ -311,7 +316,7 @@ export function generateJustWorkSildeFolderEntry(slide) {
                 console.error(err);
             });
         });
-    }
+    };
 
     timingWrapper.appendChild(cloudPath);
     timingWrapper.appendChild(cloudPath_icon);
@@ -358,6 +363,9 @@ export function generateSlides(meta) {
 export function initMain() {
     addSlide_icon.onclick = () => {
         const group = window.meta.groups[window.currentGroup];
+
+        if (group.readonly) return;
+
         group.urls.push({
             type: "cloud",
             url: "",
@@ -365,6 +373,7 @@ export function initMain() {
 
         saveGroup()
             .then(() => {
+                console.info("MAIN:addSlide: added new slide to group.");
                 const index = group.urls.length - 1;
                 mainSlides_e.insertAdjacentElement(
                     "beforeend",

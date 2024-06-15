@@ -1,53 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Login</title>
+        <link rel="stylesheet" href="static/admin/css/main-auth.css" />
+    </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="static/admin/css/main.css" />
-</head>
+    <body class="login-center">
+        <h1 id="title">Loading translations...</h1>
+        <p
+            style="display: none; color: red; font-weight: bold"
+            id="auth_error"
+        ></p>
+        <form id="authForm">
+            <label id="passwordLabel" for="password">...</label>
+            <input type="password" id="password" name="password" required />
+            <button id="submitButton" type="submit">...</button>
+        </form>
+        <script>
+            document
+                .getElementById("authForm")
+                .addEventListener("submit", async function (event) {
+                    event.preventDefault(); // Prevent the form from submitting the traditional way
+                    const name = "admin";
+                    const password = document.getElementById("password").value;
 
-<body class="login-center">
-    <h1> Login </h1>
-    <p style="display: none; color: red; font-weight: bold;" id="auth_error"></p>
-    <form id="authForm">
-        <label id="passwordLabel" for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br><br>
-        <button id="submitButton" type="submit">Submit</button>
-    </form>
-    <script>
-        let lngx = navigator.language || navigator.userLanguage;
-        document.getElementById("submitButton").innerText = lngx == "en-US" | lngx == "en-GB" ? "Submit" : "Bestätigen";
-        document.getElementById("passwordLabel").innerText = lngx == "en-US" | lngx == "en-GB" ? "Password" : "Passwort";
-        document.getElementById('authForm').addEventListener('submit', async function (event) {
-            event.preventDefault(); // Prevent the form from submitting the traditional way
-            const name = "admin";
-            const password = document.getElementById('password').value;
+                    // Create the data to be sent in the request body
 
-            // Create the data to be sent in the request body
+                    // Define the Authorization header value
+                    const authHeader = "Basic " + btoa(name + ":" + password);
 
-            // Define the Authorization header value
-            const authHeader = 'Basic ' + btoa(name + ':' + password);
+                    // Send the request using Fetch API
 
-            // Send the request using Fetch API
+                    let result = await fetch("/", {
+                        method: "GET",
+                        headers: {
+                            Authorization: authHeader,
+                        },
+                    });
+                    console.log(result);
+                    if (result.ok) {
+                        window.location.reload();
+                    } else {
+                        document.getElementById("auth_error").innerText =
+                            result.headers.get("X-auth-error");
+                        document.getElementById("auth_error").style.display =
+                            "block";
+                    }
+                });
+        </script>
+        <script type="module">
+            import {
+                fetchCurrentLanguage,
+                formatString,
+                getLanguageData,
+                initLanguage,
+            } from "./static/admin/js/lang.js";
+            (async () => {
+                await initLanguage();
+                await fetchCurrentLanguage();
 
-            let result = await fetch('/', {
-                method: 'GET',
-                headers: {
-                    'Authorization': authHeader,
-                }
-            });
-            console.log(result);
-            if (result.ok) {
-                window.location.reload();
-            } else {
-                document.getElementById('auth_error').innerText = result.headers.get("X-auth-error");
-                document.getElementById('auth_error').style.display = 'block';
-            }
-        });
-    </script>
-</body>
+                const lang = getLanguageData();
 
+                document.getElementById("submitButton").innerText =
+                    formatString(lang.login.login);
+                document.getElementById("passwordLabel").innerText =
+                    formatString(lang.login.password);
+                document.getElementById("title").innerText = formatString(
+                    lang.login.title
+                );
+            })();
+        </script>
+    </body>
 </html>

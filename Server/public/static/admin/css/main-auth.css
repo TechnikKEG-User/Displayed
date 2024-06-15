@@ -12,3 +12,19 @@
 
     height: 100vh;
 }
+
+#authForm {
+    width: 80%;
+    max-width: 20em;
+}
+
+#password {
+    width: 100%;
+    margin-bottom: 0.5em;
+    margin-top: 0.3em;
+    box-sizing: border-box;
+}
+
+#submitButton {
+    width: 100%;
+}

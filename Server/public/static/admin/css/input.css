@@ -20,12 +20,19 @@ select {
     color: var(--text-color);
 
     transition: 0.15s border-color ease-in-out;
-
-    cursor: pointer;
 }
 
 input:focus,
 select:focus {
     border-color: var(--accent-color);
     outline: none;
+}
+
+input {
+    cursor: text;
+}
+
+button,
+select {
+    cursor: pointer;
 }

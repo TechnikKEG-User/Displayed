@@ -7,6 +7,7 @@ import {
 import {
     addGroup_icon,
     logout_icon,
+    settingsOverlay_e,
     settings_icon,
     sidebarContent_e,
 } from "./elements.js";
@@ -129,6 +130,6 @@ export function initSidebar() {
     };
 
     settings_icon.onclick = () => {
-        alert("TODO: Settings overlay");
+        settingsOverlay_e.classList.add("shown");
     };
 }

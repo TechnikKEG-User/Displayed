@@ -1,7 +1,6 @@
-import { changePasswordShow } from "./changePassword.js";
 import { DEFAULT_GROUP_ID, EVENTS, SERVER_ENDPOINTS } from "./constants.js";
 import { mainHeaderStatus_e } from "./elements.js";
-import { initExplorer, selectFileInUI } from "./explorer.js";
+import { initExplorer } from "./explorer.js";
 import {
     fetchCurrentLanguage,
     formatString,
@@ -9,6 +8,7 @@ import {
     initLanguage,
 } from "./lang.js";
 import { initMain, loadGroup } from "./main.js";
+import { generateDeviceTree, initSettings } from "./settings.js";
 import { generateSidebar, initSidebar, selectSidebarGroup } from "./sidebar.js";
 
 window.currentGroup = DEFAULT_GROUP_ID;
@@ -43,6 +43,7 @@ async function load() {
 
     selectSidebarGroup(window.currentGroup);
     loadGroup(window.currentGroup);
+    generateDeviceTree();
 }
 
 async function init() {
@@ -52,7 +53,8 @@ async function init() {
     initMain();
     initSidebar();
     initExplorer();
-    //setTimeout(()=>  selectFileInUI((path)=>{console.log(path)}),100);
+    initSettings();
+
     await load();
 }
 

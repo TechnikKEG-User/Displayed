@@ -360,3 +360,185 @@
 .explorer-float-right {
     float: right;
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                  Settings                                  */
+/* -------------------------------------------------------------------------- */
+
+#app-settings {
+    display: flex;
+    width: 100dvw;
+    height: 100dvh;
+    z-index: -1;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    background-color: var(--background-color);
+
+    opacity: 0;
+    transition: 0.15s opacity ease-in-out;
+}
+
+#app-settings.shown {
+    opacity: 1;
+    z-index: 200;
+}
+
+#settings-left {
+    min-width: 200px;
+    max-width: 300px;
+    width: 35dvw;
+
+    border-right: var(--border-width) solid var(--border-color);
+
+    display: flex;
+    flex-direction: column;
+}
+
+#settings-right {
+    flex: 1;
+}
+
+#settings-left,
+#settings-right {
+    padding: var(--padding-layer);
+}
+
+#settings-left-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#settings-right-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+#settings-right-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: var(--padding-layer);
+    padding-bottom: var(--padding-layer);
+
+    border-bottom: var(--border-width) solid var(--border-color-light);
+}
+
+#settings-title {
+    margin-top: 0;
+
+    color: var(--text-color-extreme);
+
+    font-size: var(--title-size);
+    font-weight: var(--title-weight);
+
+    height: calc(var(--title-size) * 1.4);
+}
+
+/* -------------------------------- Password -------------------------------- */
+
+.change-password-group {
+    margin-bottom: var(--padding-layer);
+}
+
+.change-password-group input {
+    width: 100%;
+    margin-bottom: 0.5em;
+    margin-top: 0.3em;
+    box-sizing: border-box;
+}
+
+#change-password-submit {
+    margin-top: calc(var(--padding-layer) * 2);
+    width: 100%;
+}
+
+/* -------------------------------- Language -------------------------------- */
+
+#settings-language * {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#change-language-submit {
+    margin-top: calc(var(--padding-layer) * 2);
+    width: 100%;
+}
+
+/* ------------------------------ Group sorting ----------------------------- */
+
+.settings-device {
+    filter: var(--drop-shadow);
+    background-color: var(--background-color);
+
+    margin: 0.4em;
+    border-radius: var(--border-radius);
+    border: var(--border-layer);
+
+    overflow: hidden;
+    margin-bottom: 1em;
+}
+
+.settings-device-content {
+    background-color: var(--background-shade);
+    padding: var(--padding-layer);
+
+    display: flex;
+    height: min-content;
+}
+
+.settings-device-preview {
+    aspect-ratio: 16 / 9;
+    height: 7em;
+}
+
+.settings-device-info {
+    flex: 1;
+    margin-left: var(--padding-layer);
+}
+
+.settings-device-name-row {
+    display: flex;
+    align-items: center;
+
+    margin-bottom: var(--padding-small);
+    padding-bottom: var(--padding-small);
+
+    border-bottom: var(--border-width) solid var(--border-color-light);
+}
+
+.settings-device-name {
+    font-family: "monospace";
+    font-size: var(--text-big-size);
+
+    display: inline-block;
+    flex: 1;
+}
+
+.settings-device-name-change-icon {
+    display: inline-block;
+    margin-left: var(--padding-small);
+}
+
+.settings-device-ref {
+    font-family: "monospace";
+    color: var(--text-color-gray);
+}
+
+.settings-device-sorting {
+    display: flex;
+    align-items: center;
+
+    margin-top: calc(var(--padding-small) * 3);
+}
+
+.settings-device-group-select {
+    flex: 1;
+}
+
+.settings-device-group-select-save {
+    margin-left: var(--padding-small);
+}

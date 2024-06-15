@@ -34,7 +34,10 @@
         "new_password": "Neues Passwort",
         "confirm_password": "Passwort wiederholen",
         "login": "Anmelden",
-        "error": "Fehler beim Anmelden: {error}"
+        "error": "Fehler beim Anmelden: {error}",
+
+        "passwords_not_match": "Die Passwörter stimmen nicht überein",
+        "error_changing_password": "Fehler beim Ändern des Passworts."
     },
     "explorer":{
         "title": "Datei Explorer",
@@ -43,5 +46,11 @@
         "select_file_error": "Bitte wählen Sie eine Datei aus!",
         "select_dir_error": "Bitte wählen Sie einen Ordner aus!",
         "cancel": "Abbrechen"
+    },
+    "settings": {
+        "title": "Einstellungen",
+        "language_title": "Sprache ändern",
+        "language_save": "Speichern und neu laden",
+        "set_device_name": "Bitte geben sie einen Namen für das Gerät ein:"
     }
 }

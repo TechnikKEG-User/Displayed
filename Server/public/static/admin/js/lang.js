@@ -1,4 +1,4 @@
-import { EVENTS } from "./constants.js";
+import { EVENTS, LOCAL_STORAGE_LANG_FIELD } from "./constants.js";
 
 let languageMeta = [];
 let languageData = {};
@@ -20,14 +20,14 @@ export function getSupportedLanguages() {
 }
 
 export function setCurrentLanguageCode(lang) {
-    window.localStorage.setItem("displayed::lang", lang);
-    window.dispatchEvent(new CustomEvent(EVENTS.reload));
+    window.localStorage.setItem(LOCAL_STORAGE_LANG_FIELD, lang);
+    window.location.reload();
 }
 
 export function getCurrentLanguageCode() {
     const browserLang = navigator.language || navigator.userLanguage;
     return (
-        window.localStorage.getItem("DisplayedAdmin:lang") ||
+        window.localStorage.getItem(LOCAL_STORAGE_LANG_FIELD) ||
         (getSupportedLanguages()
             .map((lang) => lang.code)
             .includes(browserLang)

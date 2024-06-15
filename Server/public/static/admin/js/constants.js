@@ -26,3 +26,5 @@ export const EVENTS = {
     // Other events
     reload: "main:reload",
 };
+
+export const LOCAL_STORAGE_LANG_FIELD = "DisplayedAdmin:lang";

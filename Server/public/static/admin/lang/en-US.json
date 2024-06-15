@@ -34,7 +34,10 @@
         "new_password": "New password",
         "confirm_password": "Confirm password",
         "login": "Login",
-        "error": "Error while logging in: {error}"
+        "error": "Error while logging in: {error}",
+
+        "passwords_not_match": "The passwords do not match!",
+        "error_changing_password": "An error occurred while changing the password."
     },
     "explorer":{
         "title": "File Explorer",
@@ -43,6 +46,11 @@
         "select_file_error": "Please select a file!",
         "select_dir_error": "Please select a directory!",
         "cancel": "Cancel"
+    },
+    "settings": {
+        "title": "Settings",
+        "language_title": "Change language",
+        "language_save": "Save and reload",
+        "set_device_name": "Please enter a name for the device:"
     }
-
 }

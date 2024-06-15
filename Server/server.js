@@ -300,6 +300,7 @@ app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
     conf.groups[uuid].reload = body.reload;
     conf.groups[req.query.group].urls = body.urls;
     storage.save(conf);
+    res.send("OK");
 });
 
 const CREATE_GROUP_ERROR_NO_NAME = {

@@ -1,0 +1,14 @@
+@import url("vars/sizes.css");
+@import url("vars/light.css") screen;
+@import url("vars/dark.css") screen and (prefers-color-scheme: dark);
+
+@import url("general.css");
+
+.login-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 100vh;
+}

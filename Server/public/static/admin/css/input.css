@@ -1,0 +1,31 @@
+@import url("vars/sizes.css");
+@import url("vars/light.css") screen;
+@import url("vars/dark.css") screen and (prefers-color-scheme: dark);
+
+@import url("general.css");
+
+/* -------------------------------------------------------------------------- */
+/*                                Input styling                               */
+/* -------------------------------------------------------------------------- */
+
+input,
+button,
+select {
+    font-family: inherit;
+    font-size: var(--text-normal-size);
+
+    padding: var(--padding-small);
+    border-radius: var(--border-radius);
+    border: var(--border-width) solid var(--border-color-light);
+
+    background-color: var(--background-shade);
+    color: var(--text-color);
+
+    transition: 0.15s border-color ease-in-out;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}

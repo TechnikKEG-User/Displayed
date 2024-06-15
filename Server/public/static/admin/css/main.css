@@ -2,71 +2,12 @@
 @import url("vars/light.css") screen;
 @import url("vars/dark.css") screen and (prefers-color-scheme: dark);
 
-@import url("fonts.css");
-
-body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-
-    color: var(--text-color);
-    background-color: var(--background-color);
-
-    margin: 0;
-    padding: 0;
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                Icon styling                                */
-/* -------------------------------------------------------------------------- */
-
-.icon {
-    font-family: "Material Symbols Rounded";
-    font-size: var(--icon-font-size);
-
-    filter: contrast(0.6);
-    transition: 0.1s color ease-in-out;
-
-    cursor: pointer;
-}
-
-.icon:hover {
-    color: var(--accent-color);
-}
-
-@media (hover: none) {
-    .icon:hover {
-        color: inherit !important;
-    }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                Input styling                               */
-/* -------------------------------------------------------------------------- */
-
-input,
-button,
-select {
-    font-family: inherit;
-    font-size: var(--text-normal-size);
-
-    padding: var(--padding-small);
-    border-radius: var(--border-radius);
-    border: var(--border-width) solid var(--border-color-light);
-
-    background-color: var(--background-shade);
-    color: var(--text-color);
-
-    transition: 0.15s border-color ease-in-out;
-}
-
-input:focus,
-select:focus {
-    border-color: var(--accent-color);
-    outline: none;
-}
+@import url("general.css");
 
 /* -------------------------------------------------------------------------- */
 /*                                 Main layout                                */
 /* -------------------------------------------------------------------------- */
+
 #app-groupadd {
     display: none;
 }
@@ -75,10 +16,9 @@ select:focus {
     display: flex;
     flex-direction: row;
     height: 100vh;
-
 }
 
-#app-main>* {
+#app-main > * {
     padding: 0.8em;
     box-sizing: border-box;
 }
@@ -113,6 +53,8 @@ select:focus {
 
     display: flex;
     flex-direction: column;
+
+    position: relative;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -122,14 +64,16 @@ select:focus {
 #main-read-only-overlay {
     width: 100%;
     height: 100%;
+
     position: absolute;
     top: 0;
-    left: 300px;
-    background-color: rgba(0, 0, 0, 0);
+    left: 0;
+
+    background-color: var(--readonly-overlay-color);
+
     z-index: 100;
-
+    cursor: not-allowed;
 }
-
 
 #sidebar-title {
     color: var(--text-color-extreme);
@@ -275,8 +219,10 @@ select:focus {
     font-size: var(--text-big-size);
 }
 
-.main-slide[data-type="cloud"] .main-slide-type-selector-field[data-type="cloud"],
-.main-slide[data-type="remote"] .main-slide-type-selector-field[data-type="remote"] {
+.main-slide[data-type="cloud"]
+    .main-slide-type-selector-field[data-type="cloud"],
+.main-slide[data-type="remote"]
+    .main-slide-type-selector-field[data-type="remote"] {
     background-color: var(--background-shade-selected);
     filter: var(--drop-shadow-selected);
     border: var(--border-width) solid var(--accent-color);
@@ -348,23 +294,17 @@ select:focus {
     margin-left: var(--padding-small);
 }
 
-/* --------------------------------- Login --------------------------------- */
-.login-center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    height: 100vh;
-}
-
-/* --------------------------------- Explorer ------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*                                  Explorer                                  */
+/* -------------------------------------------------------------------------- */
 
 #app-explorer {
     overflow: none;
     --explorer-header-height: 2.5em;
     --explorer-path-height: 1.2em;
-    --explorer-offset-height: calc(var(--explorer-header-height) + var(--explorer-path-height) + 2em);
+    --explorer-offset-height: calc(
+        var(--explorer-header-height) + var(--explorer-path-height) + 2em
+    );
 }
 
 .explorer-file-img {
@@ -387,7 +327,6 @@ select:focus {
     top: 0;
     left: 0;
     position: absolute;
-
 }
 
 #app-explorer-path {

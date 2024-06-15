@@ -1,0 +1,42 @@
+@import url("vars/sizes.css");
+@import url("vars/light.css") screen;
+@import url("vars/dark.css") screen and (prefers-color-scheme: dark);
+
+@import url("general.css");
+
+@import url("fonts.css");
+@import url("input.css");
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+    color: var(--text-color);
+    background-color: var(--background-color);
+
+    margin: 0;
+    padding: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Icon styling                                */
+/* -------------------------------------------------------------------------- */
+
+.icon {
+    font-family: "Material Symbols Rounded";
+    font-size: var(--icon-font-size);
+
+    filter: contrast(0.6);
+    transition: 0.1s color ease-in-out;
+
+    cursor: pointer;
+}
+
+.icon:hover {
+    color: var(--accent-color);
+}
+
+@media (hover: none) {
+    .icon:hover {
+        color: inherit !important;
+    }
+}

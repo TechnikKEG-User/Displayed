@@ -16,4 +16,6 @@
     --border-color-light: #cfd5d6;
     --border-color-selected: var(--accent-color);
     --border-layer: 0px solid transparent;
+
+    --readonly-overlay-color: rgba(255, 255, 255, 0.582);
 }

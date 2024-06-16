@@ -105,11 +105,13 @@ class SessionHndl {
 const sessionHndl = new SessionHndl();
 const PATH = "/public"
 const MOUNT = "/mount"
+const IMAGEN = "/imagen"
 var https = require('https');
 var http = require('http');
 
 app.use("/static", express.static(__dirname + PATH + "/static"));
 app.use(MOUNT, express.static(__dirname + PATH + MOUNT));
+app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN));
 app.use(cookieParser());
 
 const storage = require("./storage");
@@ -233,9 +235,10 @@ function readdirRecursive(path) {
 app.get("/api/admin/ls", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let path = __dirname + PATH + MOUNT + (req.query.path ? req.query.path : "");
-    console.log(path);
     let rt = readdirRecursive(path);
-    console.log(rt)
+    if(req.query.path == undefined){
+       rt = rt.concat(readdirRecursive(__dirname + PATH + IMAGEN));
+    }
     // Remove the _dirname from ever entry in rt
     rt.forEach((entry) => {
         entry.path = entry.path.replace(__dirname + PATH, "");

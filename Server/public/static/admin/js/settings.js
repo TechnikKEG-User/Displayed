@@ -114,8 +114,37 @@ function generateDevice(devName, devRef, previewSrc) {
             });
     };
 
+    const deviceDeleteIcon = document.createElement("div");
+    deviceDeleteIcon.classList.add("settings-device-delete-icon", "icon");
+    deviceDeleteIcon.innerText = "delete";
+    deviceDeleteIcon.onclick = () => {
+        if (
+            !confirm(
+                formatString(lang.settings.ask_delete_device, {
+                    name: devName,
+                    ref: devRef,
+                })
+            )
+        )
+            return;
+
+        fetch(SERVER_ENDPOINTS.deleteRef + "?ref=" + devRef, {
+            method: "DELETE",
+        })
+            .then(() => {
+                console.info(
+                    `SETTINGS:deleteDevice: device '${devName}' (${devRef}) was deleted.`
+                );
+                window.dispatchEvent(new Event(EVENTS.reload));
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
     nameRow.appendChild(name);
     nameRow.appendChild(nameChangeIcon);
+    nameRow.appendChild(deviceDeleteIcon);
 
     const ref = document.createElement("div");
     ref.classList.add("settings-device-ref");

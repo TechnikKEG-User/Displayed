@@ -22,15 +22,18 @@ body {
 .icon {
     font-family: "Material Symbols Rounded";
     font-size: var(--icon-font-size);
+    user-select: none;
 
     filter: contrast(0.6);
     transition: 0.1s color ease-in-out;
 
     cursor: pointer;
+
+    --hover-color: var(--accent-color);
 }
 
 .icon:hover {
-    color: var(--accent-color);
+    color: var(--hover-color);
 }
 
 @media (hover: none) {

@@ -7,10 +7,12 @@ export const SERVER_ENDPOINTS = {
 
     setGroup: "/api/admin/setRefGroup",
     setName: "/api/admin/setRefName",
+    deleteRef: "/api/admin/deleteRef",
 
     setGroupName: "/api/admin/setGroupName",
     setGroupContent: "/api/admin/setGroupContent",
     createGroup: "/api/admin/createGroup",
+    deleteGroup: "/api/admin/deleteGroup",
 };
 
 // Format: dispatcher:event-name

@@ -6,10 +6,12 @@ import {
 } from "./constants.js";
 import {
     addSlide_icon,
+    deleteGroup_icon,
     mainHeaderStatus_e,
     mainHeaderTitle_e,
     mainReadOnly_e,
     mainSlides_e,
+    renameGroup_icon,
 } from "./elements.js";
 import { selectDirInUI, selectFileInUI } from "./explorer.js";
 import { formatString, getLanguageData } from "./lang.js";
@@ -63,31 +65,8 @@ export function generateSlideEntry(type, target, duration, index) {
     const content = document.createElement("div");
     content.classList.add("main-slide-content");
 
-    const deleteIcon = document.createElement("div");
-    deleteIcon.classList.add("icon", "main-slide-delete");
-    deleteIcon.innerText = "delete";
-    deleteIcon.onclick = () => {
-        if (
-            confirm(
-                formatString(lang.main.ask_delete, {
-                    type: type == "cloud" ? lang.main.cloud : lang.main.remote,
-                    target,
-                })
-            )
-        ) {
-            saveGroup()
-                .then(() => {
-                    // Remove slide from array
-                    group.urls.splice(index, 1);
-
-                    // Reload slides
-                    window.dispatchEvent(new CustomEvent(EVENTS.reload));
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
-        }
-    };
+    const settings = document.createElement("div");
+    settings.classList.add("main-slide-settings");
 
     const typeSelectorWrapper = document.createElement("div");
     typeSelectorWrapper.classList.add("main-slide-type-selector");
@@ -218,22 +197,108 @@ export function generateSlideEntry(type, target, duration, index) {
     timingWrapper.appendChild(timingInput);
     timingWrapper.appendChild(timingSave);
 
-    content.appendChild(deleteIcon);
-    content.appendChild(typeSelectorWrapper);
-    content.appendChild(cloudWrapper);
-    content.appendChild(remoteWrapper);
-    content.appendChild(timingWrapper);
+    settings.appendChild(typeSelectorWrapper);
+    settings.appendChild(cloudWrapper);
+    settings.appendChild(remoteWrapper);
+    settings.appendChild(timingWrapper);
+
+    const sortWrapper = document.createElement("div");
+    sortWrapper.classList.add("main-slide-sort");
+
+    const sortUpIcon = document.createElement("div");
+    sortUpIcon.classList.add("icon", "main-slide-sort-up");
+    sortUpIcon.innerText = "arrow_upward";
+    if (index === 0)
+        sortUpIcon.classList.add("main-slide-sort-direction-disallowed");
+    sortUpIcon.onclick = () => {
+        if (index === 0) return;
+
+        // Swap slides
+        const tmp = group.urls[index];
+        group.urls[index] = group.urls[index - 1];
+        group.urls[index - 1] = tmp;
+
+        // Save and reload
+        saveGroup()
+            .then(() => {
+                window.dispatchEvent(new CustomEvent(EVENTS.reload));
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    const sortDownIcon = document.createElement("div");
+    sortDownIcon.classList.add("icon", "main-slide-sort-down");
+    sortDownIcon.innerText = "arrow_downward";
+    if (index === group.urls.length - 1)
+        sortDownIcon.classList.add("main-slide-sort-direction-disallowed");
+    sortDownIcon.onclick = () => {
+        if (index === group.urls.length - 1) return;
+
+        // Swap slides
+        const tmp = group.urls[index];
+        group.urls[index] = group.urls[index + 1];
+        group.urls[index + 1] = tmp;
+
+        // Save and reload
+        saveGroup()
+            .then(() => {
+                window.dispatchEvent(new CustomEvent(EVENTS.reload));
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    const deleteIcon = document.createElement("div");
+    deleteIcon.classList.add("icon", "main-slide-delete");
+    deleteIcon.innerText = "delete";
+    deleteIcon.onclick = () => {
+        if (
+            confirm(
+                formatString(lang.main.ask_delete, {
+                    type: type == "cloud" ? lang.main.cloud : lang.main.remote,
+                    target,
+                })
+            )
+        ) {
+            // Remove slide from array
+            group.urls.splice(index, 1);
+
+            saveGroup()
+                .then(() => {
+                    // Reload slides
+                    window.dispatchEvent(new CustomEvent(EVENTS.reload));
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
+    };
+
+    sortWrapper.appendChild(sortUpIcon);
+    sortWrapper.appendChild(deleteIcon);
+    sortWrapper.appendChild(sortDownIcon);
+
+    content.appendChild(settings);
+    content.appendChild(sortWrapper);
 
     wrapper.appendChild(content);
 
     return wrapper;
 }
-export function generateJustWorkSildeDurationEntry(slide) {
+
+export function generateJustWorkSlideDurationEntry(slide) {
     const lang = getLanguageData();
     const duration = slide.duration;
 
+    const wrapperWrapper = document.createElement("div");
+    wrapperWrapper.classList.add("main-slide-content");
+
     const wrapper = document.createElement("div");
-    wrapper.classList.add("main-slide-content");
+    wrapper.classList.add("main-slide-settings");
+
     const typeSelectorWrapper = document.createElement("div");
     typeSelectorWrapper.classList.add("main-slide-type-selector");
 
@@ -277,18 +342,23 @@ export function generateJustWorkSildeDurationEntry(slide) {
     wrapper.appendChild(typeSelectorWrapper);
     wrapper.appendChild(timingWrapper);
 
+    wrapperWrapper.appendChild(wrapper);
+
     const mainWrapper = document.createElement("div");
     mainWrapper.classList.add("main-slide");
     mainWrapper.dataset.type = "cloud";
-    mainWrapper.appendChild(wrapper);
+    mainWrapper.appendChild(wrapperWrapper);
 
     return mainWrapper;
 }
-export function generateJustWorkSildeFolderEntry(slide) {
+export function createJustWorkSlideFolderEntry(slide) {
     const lang = getLanguageData();
 
+    const wrapperWrapper = document.createElement("div");
+    wrapperWrapper.classList.add("main-slide-content");
+
     const wrapper = document.createElement("div");
-    wrapper.classList.add("main-slide-content");
+    wrapper.classList.add("main-slide-settings");
 
     const typeSelectorWrapper = document.createElement("div");
     typeSelectorWrapper.classList.add("main-slide-type-selector");
@@ -323,10 +393,12 @@ export function generateJustWorkSildeFolderEntry(slide) {
     wrapper.appendChild(typeSelectorWrapper);
     wrapper.appendChild(timingWrapper);
 
+    wrapperWrapper.appendChild(wrapper);
+
     const mainWrapper = document.createElement("div");
     mainWrapper.classList.add("main-slide");
     mainWrapper.dataset.type = "cloud";
-    mainWrapper.appendChild(wrapper);
+    mainWrapper.appendChild(wrapperWrapper);
     return mainWrapper;
 }
 export function generateJustWorkSlides(meta) {
@@ -335,12 +407,12 @@ export function generateJustWorkSlides(meta) {
         if (slide.url == "generalDuration")
             mainSlides_e.insertAdjacentElement(
                 "beforeend",
-                generateJustWorkSildeDurationEntry(slide)
+                generateJustWorkSlideDurationEntry(slide)
             );
         if (slide.url == "folder")
             mainSlides_e.insertAdjacentElement(
                 "beforeend",
-                generateJustWorkSildeFolderEntry(slide)
+                createJustWorkSlideFolderEntry(slide)
             );
     });
 }
@@ -361,6 +433,8 @@ export function generateSlides(meta) {
 }
 
 export function initMain() {
+    const lang = getLanguageData();
+
     addSlide_icon.onclick = () => {
         const group = window.meta.groups[window.currentGroup];
 
@@ -379,6 +453,58 @@ export function initMain() {
                     "beforeend",
                     generateSlideEntry("cloud", "", 15, index)
                 );
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    deleteGroup_icon.onclick = () => {
+        const group = window.meta.groups[window.currentGroup];
+
+        if (group.readonly) return;
+
+        if (
+            confirm(
+                formatString(lang.main.ask_delete_group, { name: group.name })
+            )
+        ) {
+            fetch(
+                SERVER_ENDPOINTS.deleteGroup + "?group=" + window.currentGroup,
+                {
+                    method: "DELETE",
+                }
+            )
+                .then(() => {
+                    console.info("MAIN:deleteGroup: deleted group.");
+
+                    window.currentGroup = DEFAULT_GROUP_ID;
+                    window.dispatchEvent(new CustomEvent(EVENTS.reload));
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
+    };
+
+    renameGroup_icon.onclick = () => {
+        const newName = prompt(formatString(lang.main.rename_group_prompt, {}));
+
+        if (newName === null || newName === "") {
+            return;
+        }
+
+        fetch(
+            SERVER_ENDPOINTS.setGroupName +
+                `?group=${window.currentGroup}&name=${encodeURIComponent(
+                    newName
+                )}`,
+            {
+                method: "PATCH",
+            }
+        )
+            .then(() => {
+                window.dispatchEvent(new CustomEvent(EVENTS.reload));
             })
             .catch((err) => {
                 console.error(err);

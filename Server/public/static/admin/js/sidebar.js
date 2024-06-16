@@ -118,7 +118,7 @@ export function initSidebar() {
                     return;
                 }
 
-                window.currentGroup = DEFAULT_GROUP_ID;
+                window.currentGroup = data.uuid;
                 window.dispatchEvent(new CustomEvent(EVENTS.reload));
 
                 alert(formatString(lang.group.successfully_created, { name }));

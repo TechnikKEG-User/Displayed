@@ -9,7 +9,10 @@
         "url": "URL",
         "timing": "Duration (sec)",
 
-        "ask_delete": "Do you really want to delete this entry (type: {type})?\nTarget: {target}"
+        "ask_delete": "Do you really want to delete this entry (type: {type})?\nTarget: {target}",
+        "ask_delete_group": "Do you really want to delete the group '{name}'? This action is irreversible!",
+
+        "rename_group_prompt": "Please enter a new name for the group:"
     },
     "sidebar": {
         "info": "{num} device(s)"
@@ -51,6 +54,7 @@
         "title": "Settings",
         "language_title": "Change language",
         "language_save": "Save and reload",
-        "set_device_name": "Please enter a name for the device:"
+        "set_device_name": "Please enter a name for the device:",
+        "ask_delete_device": "Do you really want to delete the device '{name}' ({ref})? This action is irreversible!"
     }
 }

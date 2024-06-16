@@ -77,7 +77,7 @@ function generateDevice(devName, devRef, previewSrc) {
 
     const preview = document.createElement("iframe");
     preview.classList.add("settings-device-preview");
-    preview.src = previewSrc;
+    preview.src = decodeURIComponent(previewSrc);
 
     const info = document.createElement("div");
     info.classList.add("settings-device-info");

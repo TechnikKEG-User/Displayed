@@ -9,7 +9,7 @@ const ref = new URLSearchParams(window.location.search).get("ref");
 const defaultUrls = [
     {
         duration: 10,
-        url: "https://cdn.jsdelivr.net/gh/deltazero-cz/kiosk.pi@master/stage2-kiosk/00-kiosk/files/splash.png",
+        url: "/imagen/banner.png",
     },
 ];
 
@@ -37,11 +37,19 @@ function showUrl(url) {
 
     isTopIframeShown = !isTopIframeShown;
     return fetch(
-        "/api/view/currUrl?url=" + encodeURIComponent(url) + "&ref=" + ref,
+        "/api/view/currUrl",
         {
             method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                ref: ref,
+                url: encodeURIComponent(url)
+            })
         }
     );
+    
 }
 
 function isLinkText(url) {
@@ -80,18 +88,20 @@ async function interval() {
 
     if (Date.now() > nextSlideSwitch) {
         currentUrlIndex = (currentUrlIndex + 1) % urls.length;
-        const url = urls[currentUrlIndex].url;
+        let url = urls[currentUrlIndex].url;
         if (isImage(url)) {
-            const res = await fetch(url);
-
+            await fetch(url);
+/*
             const contentB64 = btoa(
                 String.fromCharCode.apply(
                     null,
                     new Uint8Array(await res.arrayBuffer())
                 )
-            );
-
-            showUrl(getImagePage(contentB64, url.split(".").pop()));
+            );*/
+            if(!url.startsWith("http")) {
+                url = window.location.origin + url;
+            }
+            showUrl(getImagePage(url));
         } else if (isLinkText(url)) {
             const res = await fetch(url);
             const text = await res.text();

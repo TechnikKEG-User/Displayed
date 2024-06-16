@@ -27,6 +27,15 @@ Content-Type: application/json
 
 ### Notify the admin ui on page change
 
-`PUT /api/view/currUrl?url=<string>&ref=<macAddr<string(17)>>`
+`PUT /api/view/currUrl`
 
-No response
+```json
+Content-Type: application/json
+
+{
+   "ref": string,
+   "url": string
+}
+```
+
+Response: Ok if Ok

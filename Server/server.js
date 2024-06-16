@@ -165,6 +165,8 @@ function getJustWork() {
     });
     folder = folder == "" ? "/" : folder;
     fs.readdirSync(__dirname + PATH + folder).forEach(file => {
+        // if file is a directory continue
+        if (fs.lstatSync(__dirname + PATH + folder + "/" + file).isDirectory()) return;
         urls.push({ duration: generalDuration, url: folder + "/" + file });
     });
     urls.sort((a, b) => {
@@ -245,11 +247,11 @@ app.get("/api/admin/ls", (req, res) => {
     });
     res.send(JSON.stringify(rt, null, 4));
 })
-app.put("/api/view/currUrl", (req, res) => {
+app.put("/api/view/currUrl",express.json() ,(req, res) => {
     //
     let conf = storage.get();
-    let mac = req.query.ref;
-    let url = req.query.url;
+    let mac = req.body.ref;
+    let url = req.body.url;
     if (conf.refs[mac] == undefined) {
         error("Ref not found! MAC: " + mac);
         //res.send("Ref not found! MAC: " + mac);

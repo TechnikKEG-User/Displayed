@@ -3,6 +3,7 @@
 ## General
 
 ### All data for the admin ui
+
 `GET /api/admin/alldata.json`
 
 Response:
@@ -69,6 +70,12 @@ No response
 
 No response
 
+### Delete device
+
+`DELETE /api/admin/deleteRef?ref=<string>`
+
+Response: Ok if Ok
+
 ## Group
 
 ### Set name of group
@@ -112,3 +119,12 @@ Content-Type: application/json
         "message": "string"
     [endif]
 }
+
+
+```
+
+### Delete Group
+
+`DELETE /api/admin/createGroup?group=<string>`
+
+Response: OK if OK

@@ -292,6 +292,25 @@ app.patch("/api/admin/setRefName", (req, res) => {
     storage.save(conf);
     res.send("OK");
 });
+app.delete("/api/admin/deleteGroup", (req, res) => {
+    if (!sessionHndl.check(req, res)) return;
+    let conf = storage.get();
+    if (conf.groups[req.query.group] == undefined) { error("deleteGroup ;Group not found! UUID: " + req.query.group); return; }
+    if (req.query.group == JUST_WORK_GROUP) { error("deleteGroup ;Can't delete default group!"); return; }
+    if (conf.groups[req.query.group].readonly) { error("deleteGroup ;Group is readonly! UUID: " + req.query.group); return; }
+    delete conf.groups[req.query.group];
+    storage.save(conf);
+    res.send("OK");
+});
+app.delete("/api/admin/deleteRef", (req, res) => {
+    if (!sessionHndl.check(req, res)) return;
+    let conf = storage.get();
+    if (conf.refs[req.query.ref] == undefined) { error("deleteRef ;Ref not found! MAC: " + req.query.ref); return; }
+    delete conf.refs[req.query.ref];
+    storage.save(conf);
+    res.send("OK");
+});
+
 app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();

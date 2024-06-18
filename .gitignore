@@ -3,3 +3,5 @@ Server/_exec/*
 Server/node_modules
 Server/node_modules/*
 Server/package-lock.json
+Server/bun.lockb
+Server/build

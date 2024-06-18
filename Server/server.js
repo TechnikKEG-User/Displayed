@@ -1,16 +1,17 @@
 const express = require("express");
 const app = express();
-const uuidv4 = require('uuid').v4;
-const cookieParser = require('cookie-parser');
-const fs = require('fs');
+const uuidv4 = require("uuid").v4;
+const cookieParser = require("cookie-parser");
+const fs = require("fs");
+
 const HTTP_S = {
     HTTP_ON: true,
     HTTP_PORT: 80,
     HTTPS_ON: false,
     HTTPS_PORT: 443,
     HTTPS_CERT: "",
-    HTTPS_KEY: ""
-}
+    HTTPS_KEY: "",
+};
 const UNIT_MS = {
     SECOND: 1000,
     MINUTE: 60 * 1000,
@@ -18,15 +19,14 @@ const UNIT_MS = {
     DAY: 24 * 60 * 60 * 1000,
     WEEK: 7 * 24 * 60 * 60 * 1000,
     MONTH: 30 * 24 * 60 * 60 * 1000,
-    YEAR: 365 * 24 * 60 * 60 * 1000
-}
+    YEAR: 365 * 24 * 60 * 60 * 1000,
+};
+
 const DEFAULT_EXPIRE_DATE = 12 * UNIT_MS.HOUR;
 
 class SessionHndl {
     constructor() {
-        this.sessions = {
-
-        };
+        this.sessions = {};
     }
     getRandomToken() {
         let rt = "";
@@ -40,12 +40,15 @@ class SessionHndl {
         do {
             token = this.getRandomToken();
         } while (this.sessions[token] != undefined);
-        this.sessions[token] = { expires: DEFAULT_EXPIRE_DATE + (new Date().getTime()) };
+        this.sessions[token] = {
+            expires: DEFAULT_EXPIRE_DATE + new Date().getTime(),
+        };
         res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
         res.sendFile(__dirname + PATH + "/index.html");
     }
     renewSession(token, res) {
-        this.sessions[token].expires = DEFAULT_EXPIRE_DATE + (new Date().getTime());
+        this.sessions[token].expires =
+            DEFAULT_EXPIRE_DATE + new Date().getTime();
         res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
     }
     checkSession(token, res) {
@@ -63,17 +66,21 @@ class SessionHndl {
     }
     // True if need login again
     auth(req, res, authHeader) {
-        const [type, credentials] = authHeader.split(' ');
+        const [type, credentials] = authHeader.split(" ");
 
-        if (type !== 'Basic' || !credentials) {
+        if (type !== "Basic" || !credentials) {
             return "Invalid Authorization Header";
         }
-        const decodedCredentials = Buffer.from(credentials, 'base64').toString('utf-8');
-        const [username, password] = decodedCredentials.split(':');
-        return storage.checkPassword(password, username) ? null : "Invalid Password or Username";
+        const decodedCredentials = Buffer.from(credentials, "base64").toString(
+            "utf-8"
+        );
+        const [username, password] = decodedCredentials.split(":");
+        return storage.checkPassword(password, username)
+            ? null
+            : "Invalid Password or Username";
     }
     askAuth(req, res, error = "Authentication required.") {
-        res.setHeader('X-Auth-Error', error);
+        res.setHeader("X-Auth-Error", error);
         res.status(401).sendFile(__dirname + PATH + "/auth.html");
     }
     check(req, res, redirect = false) {
@@ -99,15 +106,15 @@ class SessionHndl {
         let session = req.cookies.sessionID;
         delete this.sessions[session];
         res.clearCookie("sessionID");
-
     }
 }
+
 const sessionHndl = new SessionHndl();
-const PATH = "/public"
-const MOUNT = "/mount"
-const IMAGEN = "/imagen"
-var https = require('https');
-var http = require('http');
+const PATH = "/public";
+const MOUNT = "/mount";
+const IMAGEN = "/imagen";
+var https = require("https");
+var http = require("http");
 
 app.use("/static", express.static(__dirname + PATH + "/static"));
 app.use(MOUNT, express.static(__dirname + PATH + MOUNT));
@@ -115,6 +122,7 @@ app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN));
 app.use(cookieParser());
 
 const storage = require("./storage");
+const MDNS = require("mdns");
 const DEFAULT_GROUP = storage.DEFAULT_GROUP;
 const JUST_WORK_GROUP = storage.JUST_WORK_GROUP;
 storage.get();
@@ -123,21 +131,25 @@ console.log("Server Started");
 function error(msg) {
     console.error(msg);
 }
+
 app.get("/", (req, res) => {
-    res.setHeader("Cache-Control", "no-store")
+    res.setHeader("Cache-Control", "no-store");
     if (!sessionHndl.check(req, res, true)) return;
     res.sendFile(__dirname + PATH + "/index.html");
 });
+
 app.get("/favicon.ico", (req, res) => {
     res.sendFile(__dirname + PATH + "/favicon.ico");
 });
+
 app.get("/logout", (req, res) => {
     sessionHndl.logout(req, res);
     res.redirect("/");
 });
-/**
- * View API
- */
+
+/* -------------------------------------------------------------------------- */
+/*                                  View API                                  */
+/* -------------------------------------------------------------------------- */
 app.get("/view.html", (req, res) => {
     let conf = storage.get();
     if (Object.keys(conf.refs).indexOf(req.query.ref) == -1) {
@@ -145,11 +157,12 @@ app.get("/view.html", (req, res) => {
             name: "MAC:" + req.query.ref,
             group: DEFAULT_GROUP,
             preview: "No Preview Available",
-        }
+        };
     }
     storage.save(conf);
     res.sendFile(__dirname + PATH + "/view.html");
 });
+
 function getJustWork() {
     const conf = storage.get();
     let urls = [];
@@ -164,14 +177,15 @@ function getJustWork() {
         }
     });
     folder = folder == "" ? "/" : folder;
-    fs.readdirSync(__dirname + PATH + folder).forEach(file => {
+    fs.readdirSync(__dirname + PATH + folder).forEach((file) => {
         // if file is a directory continue
-        if (fs.lstatSync(__dirname + PATH + folder + "/" + file).isDirectory()) return;
+        if (fs.lstatSync(__dirname + PATH + folder + "/" + file).isDirectory())
+            return;
         urls.push({ duration: generalDuration, url: folder + "/" + file });
     });
     urls.sort((a, b) => {
         let urla = a.url.split("/");
-        urla = urla[urla.length - 1]
+        urla = urla[urla.length - 1];
         let urlb = b.url.split("/");
         urlb = urlb[urlb.length - 1];
         urla = urla.toLowerCase();
@@ -184,13 +198,12 @@ function getJustWork() {
             return 1;
         }
         return 0;
-    })
+    });
     return {
         reload: conf.groups[JUST_WORK_GROUP].reload,
-        urls: urls
-    }
+        urls: urls,
+    };
 }
-
 
 app.get("/api/view/pages/:page", (req, res) => {
     let pathx = req.params.page.split(".");
@@ -213,8 +226,15 @@ app.get("/api/view/pages/:page", (req, res) => {
         res.send("pages/ ;Group not found! Group: " + cGroup);
         return;
     }
-    res.send(JSON.stringify({ reload: cGroupConf.reload, urls: cGroupConf.urls }, null, 4))
+    res.send(
+        JSON.stringify(
+            { reload: cGroupConf.reload, urls: cGroupConf.urls },
+            null,
+            4
+        )
+    );
 });
+
 function readdirRecursive(path) {
     let rt = [];
     let files = fs.readdirSync(path);
@@ -236,18 +256,20 @@ function readdirRecursive(path) {
 
 app.get("/api/admin/ls", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
-    let path = __dirname + PATH + MOUNT + (req.query.path ? req.query.path : "");
+    let path =
+        __dirname + PATH + MOUNT + (req.query.path ? req.query.path : "");
     let rt = readdirRecursive(path);
-    if(req.query.path == undefined){
-       rt = rt.concat(readdirRecursive(__dirname + PATH + IMAGEN));
+    if (req.query.path == undefined) {
+        rt = rt.concat(readdirRecursive(__dirname + PATH + IMAGEN));
     }
     // Remove the _dirname from ever entry in rt
     rt.forEach((entry) => {
         entry.path = entry.path.replace(__dirname + PATH, "");
     });
     res.send(JSON.stringify(rt, null, 4));
-})
-app.put("/api/view/currUrl",express.json() ,(req, res) => {
+});
+
+app.put("/api/view/currUrl", express.json(), (req, res) => {
     //
     let conf = storage.get();
     let mac = req.body.ref;
@@ -260,12 +282,11 @@ app.put("/api/view/currUrl",express.json() ,(req, res) => {
     conf.refs[mac].preview = url;
     storage.save(conf);
     res.send("OK");
-})
+});
 
-/**
- * Admin API
- */
-
+/* -------------------------------------------------------------------------- */
+/*                                  Admin API                                 */
+/* -------------------------------------------------------------------------- */
 app.get("/api/admin/alldata.json", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let strCl = structuredClone(storage.get());
@@ -276,41 +297,66 @@ app.get("/api/admin/alldata.json", (req, res) => {
 app.patch("/api/admin/setRefGroup", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();
-    if (conf.refs[req.query.ref] == undefined) { error("setRefGroup ;Ref not found! MAC: " + req.query.ref); return; }
+    if (conf.refs[req.query.ref] == undefined) {
+        error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
+        return;
+    }
     conf.refs[req.query.ref].group = req.query.group;
     storage.save(conf);
     res.send("OK");
 });
+
 app.patch("/api/admin/setGroupName", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();
-    if (conf.groups[req.query.group] == undefined) { error("setGroupName ;Group not found! UUID: " + req.query.group); return; }
+    if (conf.groups[req.query.group] == undefined) {
+        error("setGroupName ;Group not found! UUID: " + req.query.group);
+        return;
+    }
     conf.groups[req.query.group].name = req.query.name;
     storage.save(conf);
     res.send("OK");
 });
+
 app.patch("/api/admin/setRefName", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();
-    if (conf.refs[req.query.ref] == undefined) { error("setRefName ;Ref not found! MAC: " + req.query.ref); return; }
+    if (conf.refs[req.query.ref] == undefined) {
+        error("setRefName ;Ref not found! MAC: " + req.query.ref);
+        return;
+    }
     conf.refs[req.query.ref].name = req.query.name;
     storage.save(conf);
     res.send("OK");
 });
+
 app.delete("/api/admin/deleteGroup", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();
-    if (conf.groups[req.query.group] == undefined) { error("deleteGroup ;Group not found! UUID: " + req.query.group); return; }
-    if (req.query.group == JUST_WORK_GROUP) { error("deleteGroup ;Can't delete default group!"); return; }
-    if (conf.groups[req.query.group].readonly) { error("deleteGroup ;Group is readonly! UUID: " + req.query.group); return; }
+    if (conf.groups[req.query.group] == undefined) {
+        error("deleteGroup ;Group not found! UUID: " + req.query.group);
+        return;
+    }
+    if (req.query.group == JUST_WORK_GROUP) {
+        error("deleteGroup ;Can't delete default group!");
+        return;
+    }
+    if (conf.groups[req.query.group].readonly) {
+        error("deleteGroup ;Group is readonly! UUID: " + req.query.group);
+        return;
+    }
     delete conf.groups[req.query.group];
     storage.save(conf);
     res.send("OK");
 });
+
 app.delete("/api/admin/deleteRef", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();
-    if (conf.refs[req.query.ref] == undefined) { error("deleteRef ;Ref not found! MAC: " + req.query.ref); return; }
+    if (conf.refs[req.query.ref] == undefined) {
+        error("deleteRef ;Ref not found! MAC: " + req.query.ref);
+        return;
+    }
     delete conf.refs[req.query.ref];
     storage.save(conf);
     res.send("OK");
@@ -321,8 +367,14 @@ app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
     let conf = storage.get();
     let body = req.body;
     let uuid = req.query.group;
-    if (conf.groups[uuid] == undefined) { error("setGroupContent ;Group not found! UUID: " + uuid); return; }
-    if (conf.groups[uuid].readonly) { error("setGroupContent ;Group is readonly! UUID: " + uuid); return; }
+    if (conf.groups[uuid] == undefined) {
+        error("setGroupContent ;Group not found! UUID: " + uuid);
+        return;
+    }
+    if (conf.groups[uuid].readonly) {
+        error("setGroupContent ;Group is readonly! UUID: " + uuid);
+        return;
+    }
     conf.groups[uuid].name = body.name;
     conf.groups[uuid].reload = body.reload;
     conf.groups[req.query.group].urls = body.urls;
@@ -332,23 +384,30 @@ app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
 
 const CREATE_GROUP_ERROR_NO_NAME = {
     status: "error",
-    message: "No Name Provided"
-}
+    message: "No Name Provided",
+};
 const CREATE_GROUP_ERROR_NAME_EXISTS = {
     status: "error",
-    message: "Name Already Exists"
-}
+    message: "Name Already Exists",
+};
 
 app.post("/api/admin/createGroup", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();
     let rt = {
         status: "ok",
-        uuid: ""
+        uuid: "",
     };
     // Name Check
-    if (req.query.name == undefined) return res.send(JSON.stringify(CREATE_GROUP_ERROR_NO_NAME, null, 4));
-    if (Object.values(conf.groups).filter(x => x.name == req.query.name).length > 0) return res.send(JSON.stringify(CREATE_GROUP_ERROR_NAME_EXISTS, null, 4));
+    if (req.query.name == undefined)
+        return res.send(JSON.stringify(CREATE_GROUP_ERROR_NO_NAME, null, 4));
+    if (
+        Object.values(conf.groups).filter((x) => x.name == req.query.name)
+            .length > 0
+    )
+        return res.send(
+            JSON.stringify(CREATE_GROUP_ERROR_NAME_EXISTS, null, 4)
+        );
     // Generate UUID
     do {
         rt.uuid = uuidv4();
@@ -357,8 +416,8 @@ app.post("/api/admin/createGroup", (req, res) => {
         name: req.query.name,
         reload: 120,
         readonly: false,
-        urls: []
-    }
+        urls: [],
+    };
     storage.save(conf);
 
     res.send(JSON.stringify(rt, null, 4));
@@ -374,11 +433,21 @@ app.get("/api/admin/changePassword", (req, res) => {
 
     console.log(oldPassword, newPassword);
 
-    if (!storage.checkPassword(oldPassword)) return res.status(401).send("ERR: Incorrect Password");
+    if (!storage.checkPassword(oldPassword))
+        return res.status(401).send("ERR: Incorrect Password");
     storage.setPassword(newPassword);
     sessionHndl.logout(req, res);
     res.send("OK");
 });
 
+const advertisement = MDNS.createAdvertisement(
+    MDNS.tcp("displayed-srv"),
+    HTTP_S.HTTPS_ON ? HTTP_S.HTTPS_PORT : HTTP_S.HTTP_PORT
+);
+advertisement.start();
+
 if (HTTP_S.HTTP_ON) http.createServer(app).listen(HTTP_S.HTTP_PORT);
-if (HTTP_S.HTTPS_ON) https.createServer({ key: HTTP_S.HTTPS_KEY, cert: HTTP_S.HTTPS_CERT }, app).listen(HTTP_S.HTTPS_PORT);
+if (HTTP_S.HTTPS_ON)
+    https
+        .createServer({ key: HTTP_S.HTTPS_KEY, cert: HTTP_S.HTTPS_CERT }, app)
+        .listen(HTTP_S.HTTPS_PORT);

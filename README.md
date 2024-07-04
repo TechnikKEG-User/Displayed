@@ -26,3 +26,7 @@ After just using USBs and the stock image viewer of whatever smart tvs we were u
 ## Contributing
 
 If you want to contribute, please read [this file](CONTRIBUTING.md).
+
+## Mentions
+
+Some of the code for the custom image is inspired by and/or taken from [this article written by David Obdržálek](https://medium.com/@deltazero/making-kioskpi-custom-raspberry-pi-os-image-using-pi-gen-99aac2cd8cb6) and the [corresponding GitHub repository](https://github.com/deltazero-cz/kiosk.pi).

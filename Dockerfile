@@ -15,4 +15,4 @@ RUN apt update && apt -y install avahi-daemon avahi-utils libavahi-compat-libdns
     npm install
 
 WORKDIR /app/_exec
-ENTRYPOINT [ "node", "../Server/index.js" ]
+ENTRYPOINT [ "node", "../Server/server.js" ]

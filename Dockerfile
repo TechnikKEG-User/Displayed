@@ -7,7 +7,8 @@ ADD Server /app/Server
 
 EXPOSE 80
 
-RUN mkdir -p /data /mount && \
+RUN apt update && apt -y install avahi-daemon avahi-utils libavahi-compat-libdnssd-dev && \
+    mkdir -p /data /mount && \
     ln -s /data /app/Server/_exec && \
     ln -s /mount /app/Server/mount && \
     cd /app/Server && \

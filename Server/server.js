@@ -5,12 +5,12 @@ const cookieParser = require("cookie-parser");
 const fs = require("fs");
 
 const HTTP_S = {
-    HTTP_ON: true,
-    HTTP_PORT: 80,
-    HTTPS_ON: false,
-    HTTPS_PORT: 443,
-    HTTPS_CERT: "",
-    HTTPS_KEY: "",
+    HTTP_ON: (process.env.HTTP_ON || "true") == "true",
+    HTTP_PORT: parseInt(process.env.HTTP_PORT || "80"),
+    HTTPS_ON: process.env.HTTPS_ON == "true",
+    HTTPS_PORT: parseInt(process.env.HTTPS_PORT || "443"),
+    HTTPS_CERT: process.env.HTTPS_CERT || "",
+    HTTPS_KEY: process.env.HTTPS_KEY || "",
 };
 const UNIT_MS = {
     SECOND: 1000,

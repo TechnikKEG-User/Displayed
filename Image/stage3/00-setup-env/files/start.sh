@@ -27,4 +27,5 @@ fi
  
 # Launch chromium as well as the HDMI-CEC to keyboard emulator
 (cec-client | cec2kbd) & \
-    browser --fullscreen "http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"
+    chromium --kiosk --noerrdialogs --app="http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"
+    # browser --fullscreen "http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"

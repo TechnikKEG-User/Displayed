@@ -85,7 +85,10 @@ echo
 echo "Chosen IP: $SERVER_IP"
 echo "Chosen Port: $SERVER_PORT"
 
+# Get screen resolution to use as window size
+export WINDOW_SIZE=$(xrandr | grep '*' | awk '{print $1}' | tr x ,)
+
 # Launch chromium as well as the HDMI-CEC to keyboard emulator
 (cec-client | cec2kbd) & \
-    chromium --kiosk --noerrdialogs --app="http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"
+    chromium --kiosk --noerrdialogs --window-size=$WINDOW_SIZE --app="http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"
     # browser --fullscreen "http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"

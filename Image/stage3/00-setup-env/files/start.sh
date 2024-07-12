@@ -13,19 +13,82 @@ while [ -z "$(avahi-browse -t -r -k $MDNS_SERVICE | grep =)" ]; do
     sleep 1
 done
 
-# Get the IP of the server
-# => get the mDNS packet                               | extract the IP    | first ln. | split by equals   | Remove the left and right bracket
-export SERVER_IP=$(avahi-browse -t -r -k $MDNS_SERVICE | grep 'address = ' | head -n 1 | awk '{print $NF}' | cut -d '[' -f2 | cut -d ']' -f1 )
-# Get the port of the server
-# => get the mDNS packet                                 | extract port   | first ln. | split by equals   | Remove the left and right bracket
-export SERVER_PORT=$(avahi-browse -t -r -k $MDNS_SERVICE | grep 'port = ' | head -n 1 | awk '{print $NF}' | cut -d '[' -f2 | cut -d ']' -f1 )
+# Get all the mDNS packets matching the service and print them
+mdns_entries=$(avahi-browse -t -r -k $MDNS_SERVICE | grep '=')
+echo "Found mDNS entries:"
 
-# Enclose the IP in square brackets if it is an IPv6 address
-if [[ $SERVER_IP == *":"* ]]; then
-    export SERVER_IP="[$SERVER_IP]"
-fi
- 
+# Initialize arrays to store IPs and ports
+ips=()
+ports=()
+
+# Extract the IPs and ports from the mDNS entries
+while IFS= read -r line; do
+    if [[ $line == *"address = "* ]]; then
+        ip=$(echo "$line" | awk '{print $NF}' | cut -d '[' -f2 | cut -d ']' -f1)
+        if [[ $ip == *":"* ]]; then
+            ip="[$ip]"
+        fi
+        ips+=("$ip")
+    elif [[ $line == *"port = "* ]]; then
+        port=$(echo "$line" | awk '{print $NF}' | cut -d '[' -f2 | cut -d ']' -f1)
+        ports+=("$port")
+    fi
+done <<< "$mdns_entries"
+
+echo "IPs: ${ips[@]}"
+echo "Ports: ${ports[@]}"
+
+# Sort IPs so that IPv4 addresses come first
+sorted_ips=()
+sorted_ports=()
+
+for ((i=0; i<${#ips[@]}; i++)); do
+    if [[ ${ips[$i]} != "["* ]]; then
+        sorted_ips+=("${ips[$i]}")
+        sorted_ports+=("${ports[$i]}")
+    fi
+done
+
+for ((i=0; i<${#ips[@]}; i++)); do
+    if [[ ${ips[$i]} == "["* ]]; then
+        sorted_ips+=("${ips[$i]}")
+        sorted_ports+=("${ports[$i]}")
+    fi
+done
+
+echo
+echo "Sorted IPs: ${sorted_ips[@]}"
+echo "Sorted Ports: ${sorted_ports[@]}"
+
+# Function to check if IP is loopback
+is_loopback_ip() {
+    local ip=$1
+    if [[ $ip == 127.* ]]; then
+        return 0
+    elif [[ $ip == \[fe80:* ]]; then
+        return 0
+    fi
+    return 1
+}
+
+# Find the first non-loopback IP
+for ((i=0; i<${#sorted_ips[@]}; i++)); do
+    if ! is_loopback_ip "${sorted_ips[$i]}"; then
+        export SERVER_IP="${sorted_ips[$i]}"
+        export SERVER_PORT="${sorted_ports[$i]}"
+        break
+    fi
+done
+
+# Print the chosen IP and Port
+echo
+echo "Chosen IP: $SERVER_IP"
+echo "Chosen Port: $SERVER_PORT"
+
+# Get screen resolution to use as window size
+export WINDOW_SIZE=$(xrandr | grep '*' | awk '{print $1}' | tr x ,)
+
 # Launch chromium as well as the HDMI-CEC to keyboard emulator
 (cec-client | cec2kbd) & \
-    chromium --kiosk --noerrdialogs --app="http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"
+    chromium --kiosk --noerrdialogs --window-size=$WINDOW_SIZE --app="http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"
     # browser --fullscreen "http://$SERVER_IP:$SERVER_PORT/view.html?ref=$MAC"

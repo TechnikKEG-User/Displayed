@@ -20,10 +20,10 @@ iframe {
     position: absolute;
     top: 0;
     left: 0;
-    background-color: black;
 }
 
 #overlay {
+    z-index: 10;
     transition: opacity 300ms ease-in-out;
 }
 

@@ -21,7 +21,7 @@ const UNIT_MS = {
     MONTH: 30 * 24 * 60 * 60 * 1000,
     YEAR: 365 * 24 * 60 * 60 * 1000,
 };
-
+let bgMode = process.env.BACKGROUND_MODE || "_triangle";
 const DEFAULT_EXPIRE_DATE = 12 * UNIT_MS.HOUR;
 
 class SessionHndl {
@@ -202,6 +202,7 @@ function getJustWork() {
     return {
         reload: conf.groups[JUST_WORK_GROUP].reload,
         urls: urls,
+        backgroundMode: bgMode
     };
 }
 
@@ -228,7 +229,7 @@ app.get("/api/view/pages/:page", (req, res) => {
     }
     res.send(
         JSON.stringify(
-            { reload: cGroupConf.reload, urls: cGroupConf.urls },
+            { reload: cGroupConf.reload, urls: cGroupConf.urls, backgroundMode: bgMode },
             null,
             4
         )

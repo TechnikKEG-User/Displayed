@@ -22,7 +22,7 @@ export function getImagePage(url, bgMode) {
         btoa(
             `
             <!DOCTYPE html>
-            <html style="margin:0; padding: 0; width: 100dvw; height: 100dvh; overflow: hidden;">
+            <html style="margin:0; padding: 0; width: 100dvw; height: 100dvh; overflow: hidden; cursor: none;">
                 <body style="margin: 0; padding: 0; width: 100dvw; height: 100dvh;">
                     ` +
                 (bgMode > 0

@@ -14,15 +14,15 @@ const defaultUrls = [
 ];
 
 let isTopIframeShown = false;
+let firstLoadComplete = false;
 
 let nextMetaRefetch = 0;
 let nextSlideSwitch = 0;
 
+let urls = defaultUrls;
 let currentUrlIndex = 0;
 
 let inFrameBackgroundMode = 0;
-
-let urls = defaultUrls;
 
 /**
  * Show/hide the overlay iframe. This also updates the isTopIframeShown variable
@@ -31,6 +31,11 @@ let urls = defaultUrls;
 function showIframe(showOverlay) {
     overlay_e.style.opacity = showOverlay ? 1 : 0;
     isTopIframeShown = showOverlay;
+
+    if (!firstLoadComplete) {
+        bottom_e.style.opacity = 1;
+        firstLoadComplete = true;
+    }
 }
 
 /**
@@ -74,7 +79,8 @@ function showUrl(url, waitInnerContentLoadEv = false) {
 function setBackground(mode) {
     switch (mode) {
         case "_triangle":
-            bottom_e.style.backgroundImage = "linear-gradient(160deg, rgb(255,255,255) 50%, hsl(318, 100%, 95%) 10%)";
+            bottom_e.style.backgroundImage =
+                "linear-gradient(160deg, rgb(255,255,255) 50%, hsl(318, 100%, 95%) 10%)";
             bottom_e.style.backgroundColor = "#ffffff";
             inFrameBackgroundMode = 0;
             break;
@@ -101,8 +107,9 @@ function setBackground(mode) {
             break;
         default:
             let parts = mode.split(";:;");
-            inFrameBackgroundMode = parts[0] == ";blur" ? 1 : parts[0] == ";pic" ? 2 : 0;
-            bottom_e.style.backgroundImage = parts[2] ||"";
+            inFrameBackgroundMode =
+                parts[0] == ";blur" ? 1 : parts[0] == ";pic" ? 2 : 0;
+            bottom_e.style.backgroundImage = parts[2] || "";
             bottom_e.style.backgroundColor = parts[1] || "#ffffff";
             inFrameBackgroundMode = 0;
             break;
@@ -133,7 +140,7 @@ function init() {
     showIframe(false);
 
     // Listen for messages from iframes
-    window.onmessage = e => {
+    window.onmessage = (e) => {
         if (e.data.type === "contentLoaded") showIframe(!isTopIframeShown);
     };
 
@@ -150,7 +157,12 @@ async function interval() {
     if (Date.now() > nextMetaRefetch) {
         try {
             // Fetch the meta data
-            const res = await fetch("/api/view/pages/" + ref + ".json?t=" + Math.round(Date.now() / 1000));
+            const res = await fetch(
+                "/api/view/pages/" +
+                    ref +
+                    ".json?t=" +
+                    Math.round(Date.now() / 1000)
+            );
             const data = await res.json();
 
             setBackground(data.backgroundMode || "$triangle");
@@ -187,7 +199,7 @@ async function interval() {
                 url = window.location.origin + url;
             }
 
-            showUrl(getImagePage(url,inFrameBackgroundMode), true);
+            showUrl(getImagePage(url, inFrameBackgroundMode), true);
         } else if (isLinkText(url)) {
             // If the url is a text file containing a link, fetch the link and show it
             const res = await fetch(url);

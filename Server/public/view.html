@@ -1,31 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Displayed</title>
+        <script type="module" src="static/view/js/index.js" defer></script>
+        <link rel="stylesheet" href="static/view/css/main.css" />
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Displayed</title>
-    <script type="module" src="static/view/js/index.js" defer></script>
-    <link rel="stylesheet" href="static/view/css/main.css" />
-</head>
+        <style>
+            #cursor-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
 
-<body>
-    <div id="app">
-        <!-- Inline style to be ready before css loads -->
-        <img src="/imagen/banner.png"
-            alt="Image" style="
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    margin: 0px;
-                    padding: 0px;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                " />
-        <iframe src="" frameborder="0" id="overlay"></iframe>
-        <iframe src="" frameborder="0" id="bottom" style="opacity: 0;"></iframe>
-    </div>
-</body>
+                z-index: 999;
 
+                width: 100dvw;
+                height: 100dvh;
+
+                cursor: none;
+            }
+
+            #banner {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                margin: 0px;
+                padding: 0px;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="app">
+            <!-- Inline style to be ready before css loads -->
+            <img src="/imagen/banner.png" alt="Image" id="banner" />
+
+            <!-- Overlay to hide mouse -->
+            <div id="cursor-overlay"></div>
+
+            <!-- IFrames -->
+            <iframe src="" frameborder="0" id="overlay"></iframe>
+            <iframe
+                src=""
+                frameborder="0"
+                id="bottom"
+                style="opacity: 0"
+            ></iframe>
+        </div>
+    </body>
 </html>

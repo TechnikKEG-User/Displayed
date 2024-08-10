@@ -11,7 +11,7 @@
 
 ## Motivation
 
-After just using USBs and the stock image viewer of whatever smart tvs we were using for the longest time, we were pretty disappointed in the amount of customization that was possible. The lack of precise timing settings and webpage display are a pretty big limitation for us, and combined with the fact that removing the usb, copying new images on, putting it back behind the tv and starting the slideshow are just too many steps for simple updates, we decided to look for a better solution. But after looking for a bit, we could't find anything, that completely met our requirements, so we decided to create our own solution.
+After just using USBs and the preinstalled image viewer of whatever smart tvs we were using for the longest time, we were pretty disappointed with the amount of customization that was possible. The lack of precise timing settings and webpage display are a pretty big limitation for us, and combined with the fact that removing the usb, copying new images on, putting it back behind the tv and starting the slideshow are just too many steps for simple updates, we decided to look for a better solution. But after looking for a bit, we could't find anything that completely met our requirements, so we decided to create our own solution.
 
 ## Features
 

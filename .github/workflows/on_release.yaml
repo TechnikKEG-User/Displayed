@@ -1,0 +1,36 @@
+on:
+    release:
+        types: [created]
+
+jobs:
+    publish_image:
+        runs-on: ubuntu-latest
+        name: Publish image to created release
+
+        steps:
+            - name: Checkout code
+              id: checkout
+              uses: actions/checkout@v4
+
+            - name: Build image
+              id: build
+              uses: ./.github/workflows/build_image.yaml
+
+            - name: Prepare folders
+              id: prepare
+              run: |
+                  mkdir -p _download
+
+            - name: Download image
+              id: download
+              uses: actions/download-artifact@v2
+              with:
+                  name: image
+                  path: _download
+
+            - name: Publish image
+              id: publish
+              uses: AButler/upload-release-assets@v3.0
+              with:
+                  files: _download/*
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}

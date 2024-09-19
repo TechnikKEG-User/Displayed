@@ -1,0 +1,42 @@
+on:
+    workflow_call:
+        outputs:
+            artefact_id:
+                description: "The artefact ID of the built image"
+                value: ${{ jobs.build_image.outputs.artefact_id }}
+            artefact_url:
+                description: "The URL of the built image"
+                value: ${{ jobs.build_image.outputs.artefact_url }}
+
+    workflow_dispatch:
+
+jobs:
+    build_image:
+        runs-on: ubuntu-latest
+        outputs:
+            artefact_id: ${{ steps.upload.outputs.artefact_id }}
+            artefact_url: ${{ steps.upload.outputs.artefact_url }}
+
+        steps:
+            - name: Checkout code
+              id: checkout
+              uses: actions/checkout@v4
+
+            - name: Build image
+              id: build
+              run: |
+                  # Change to the directory where the Dockerfile is located
+                  cd Image/
+
+                  # Make all scripts executable
+                  find . -type f -name "*.sh" -exec chmod +x {} \;
+
+                  # Build the Docker image
+                  ./build-docker.sh
+
+            - name: Upload image
+              id: upload
+              uses: actions/upload-artifact@v2
+              with:
+                  name: image
+                  path: Image/deploy/*

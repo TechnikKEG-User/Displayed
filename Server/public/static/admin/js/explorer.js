@@ -173,7 +173,8 @@ export function initExplorer() {
         if (markedDiv) {
             let name = markedDiv.children[1].innerText;
             if (explorer.isDir(explorer.currentPath + "/" + name)) {
-                callback(explorer.currentPath + "/" + name);
+                console.log("SELECTED_DIR", explorer.currentPath + "/" + name + "/");
+                callback(explorer.currentPath + "/" + name + "/");
                 closeExplorer();
             } else {
                 alert(lang.explorer.select_dir_error + " 0x987654");
@@ -300,8 +301,20 @@ function generateFile(name) {
 
 function selectUI(fileSel, clb) {
     callback = clb;
-    (fileSel ? fileSelectButton : dirSelectButton).style.display = "block";
-    (!fileSel ? fileSelectButton : dirSelectButton).style.display = "none";
+    switch(fileSel){
+        case 1:
+            fileSelectButton.style.display = "block";
+            dirSelectButton.style.display = "none";
+            break;
+        case 0:
+            fileSelectButton.style.display = "none";
+            dirSelectButton.style.display = "block";
+            break;
+        case -1:
+            fileSelectButton.style.display = "block";
+            dirSelectButton.style.display = "block";
+            break;
+    }
     explorer.setCb(() => {
         explorerPath_e.value = explorer.currentPath;
     })
@@ -311,8 +324,11 @@ function selectUI(fileSel, clb) {
 
 }
 export function selectFileInUI(clb) {
-    return selectUI(true, clb);
+    return selectUI(1, clb);
 }
 export function selectDirInUI(clb) {
-    return selectUI(false, clb);
+    return selectUI(0, clb);
+}
+export function selectFileOrDirInUI(clb) {
+    return selectUI(-1, clb);
 }

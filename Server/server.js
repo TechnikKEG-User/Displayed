@@ -123,8 +123,8 @@ app.use(cookieParser());
 
 const storage = require("./storage");
 const MDNS = require("mdns");
+const { inflate } = require("zlib");
 const DEFAULT_GROUP = storage.DEFAULT_GROUP;
-const JUST_WORK_GROUP = storage.JUST_WORK_GROUP;
 storage.get();
 console.log("Server Started");
 
@@ -155,7 +155,7 @@ app.get("/view.html", (req, res) => {
     if (Object.keys(conf.refs).indexOf(req.query.ref) == -1) {
         conf.refs[req.query.ref] = {
             name: "MAC:" + req.query.ref,
-            group: DEFAULT_GROUP,
+            group: [],
             preview: "No Preview Available",
         };
     }
@@ -205,31 +205,66 @@ function getJustWork() {
         backgroundMode: bgMode
     };
 }
+/**
+ * Reads the url folder recursively and returns the files as urls
+ */
+function getFolderAsUrls(url, duration){
+    
+    let urls = [];
+    fs.readdirSync(__dirname + PATH + url).forEach((file) => {
+        // if file is a directory continue
+
+        if (fs.lstatSync(__dirname + PATH + url + "/" + file).isDirectory()){
+            urls.concat(getFolderAsUrls(url + "/" + file, duration));
+            return;
+        }
+        urls.push({ duration: duration, url: url + "/" + file });
+    });
+    return urls;
+}
 
 app.get("/api/view/pages/:page", (req, res) => {
+    // Delete .json file ending
     let pathx = req.params.page.split(".");
     pathx.pop();
     let mac = pathx.join(".");
+    // Get configuration
     let conf = storage.get();
+    // Check of device
     if (conf.refs[mac] == undefined) {
         error("Ref not found! MAC: " + mac);
         res.send("Ref not found! MAC: " + mac);
         return;
     }
-    const cGroup = conf.refs[mac].group;
-    if (cGroup == JUST_WORK_GROUP) {
-        res.send(JSON.stringify(getJustWork(), null, 4));
-        return;
+    // Get groups
+    let cGroups = conf.refs[mac].group;
+    if(cGroups.length == 0){
+        cGroups = [DEFAULT_GROUP];
     }
-    const cGroupConf = conf.groups[cGroup];
-    if (cGroupConf == undefined) {
-        error("pages/ ;Group not found! Group: " + cGroup);
-        res.send("pages/ ;Group not found! Group: " + cGroup);
-        return;
-    }
+    let pages = [];
+    let minimum_reload = conf.groups[cGroups[0]].reload;
+    cGroups.forEach((cGroup) => {
+        if (conf.groups[cGroup] == undefined) {
+            error("Group not found! Group: " + cGroup);
+            res.send("Group not found! Group: " + cGroup);
+            return;
+        }
+        if (conf.groups[cGroup].reload < minimum_reload) {
+            minimum_reload = conf.groups[cGroup].reload;
+        }
+        for(const url of conf.groups[cGroup].urls){
+            
+            if(url.url.endsWith("/")){
+                console.log(url);
+             pages = pages.concat(getFolderAsUrls(url.url.substring(0, url.url.length - 1), url.duration));
+            }else
+                pages.push(url);
+        }
+    });
+    console.log(pages,minimum_reload);
     res.send(
         JSON.stringify(
-            { reload: cGroupConf.reload, urls: cGroupConf.urls, backgroundMode: bgMode },
+            { reload: minimum_reload, urls: pages, backgroundMode: bgMode },
             null,
             4
         )
@@ -302,7 +337,35 @@ app.patch("/api/admin/setRefGroup", (req, res) => {
         error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
         return;
     }
-    conf.refs[req.query.ref].group = req.query.group;
+    if(conf.refs[req.query.ref].group.constructor.name === "String"){
+        let orig = conf.refs[req.query.ref].group;
+        conf.refs[req.query.ref].group = [];
+        if(orig != storage.DEFAULT_GROUP){
+            conf.refs[req.query.ref].group.push(orig);    
+        }
+    }
+    conf.refs[req.query.ref].group.push(req.query.group);
+    storage.save(conf);
+    res.send("OK");
+});
+
+app.patch("/api/admin/delRefGroup", (req, res) => {
+    if (!sessionHndl.check(req, res)) return;
+    let conf = storage.get();
+    if (conf.refs[req.query.ref] == undefined) {
+        error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
+        return;
+    }
+    if(conf.refs[req.query.ref].group.constructor.name === "String"){
+        conf.refs[req.query.ref].group = [req.query.group];
+    }
+    let idx = conf.refs[req.query.ref].group.indexOf(req.query.group);
+    if (idx == -1) {
+        error("delRefGroup ;Group not found! MAC: " + req.query.ref);
+        return;
+    }
+    conf.refs[req.query.ref].group.splice(idx, 1);
+
     storage.save(conf);
     res.send("OK");
 });

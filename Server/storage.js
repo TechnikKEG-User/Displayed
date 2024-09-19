@@ -2,7 +2,7 @@ const fs = require('fs');
 const sha256 = require('js-sha256');
 const STORAGE_FILE = "storage.json";
 const DEFAULT_GROUP = "fd1b53aa-5f24-4c9a-9ce5-29108df75bf0"
-const JUST_WORK_GROUP = "2f284bc9-30a4-4a5f-8527-7e8a40358144"
+//const JUST_WORK_GROUP = "2f284bc9-30a4-4a5f-8527-7e8a40358144"
 
 const DEFAULT_STORAGE = {
     groups: {
@@ -12,26 +12,12 @@ const DEFAULT_STORAGE = {
             readonly: true,
             urls: [
                 {
+                    type: "cloud",
                     duration: 60,
                     url: "/imagen/banner.png",
                 }
             ]
         },
-        "2f284bc9-30a4-4a5f-8527-7e8a40358144": {
-            name: "JUST WORK",
-            reload: 120,
-            readonly: false,
-            urls: [
-                {
-                    duration: 180,
-                    url: "generalDuration"
-                },
-                {
-                    duration: "/mount",
-                    url: "folder"
-                }
-            ]
-        }
     },
     refs: {
 
@@ -98,7 +84,6 @@ function get() {
 }
 module.exports = {
     DEFAULT_GROUP: DEFAULT_GROUP,
-    JUST_WORK_GROUP: JUST_WORK_GROUP,
     save: save,
     get: get,
     setPassword: setPassword,

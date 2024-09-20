@@ -1,8 +1,9 @@
 const express = require("express"); // The Webserver Lib
-const app = express(); // The Webserver Object
 const uuidv4 = require("uuid").v4; // uuidv4 generator
 const cookieParser = require("cookie-parser"); // Cookie Parser Lib
 const fs = require("fs"); // File System Lib
+const { randomInt } = require("crypto"); // Cryptographically secure random number generator
+
 /**Logo of the software */
 const LOGO = `
 +---------------------------------------------------+
@@ -19,7 +20,9 @@ const LOGO = `
 
 https://github.com/TechnikKEG/Displayed
 +---------------------------------------------------+
-`
+`;
+
+const app = express(); // The Webserver Object
 
 /**
  * Webserver Configuration
@@ -45,12 +48,12 @@ const UNIT_MS = {
     YEAR: 365 * 24 * 60 * 60 * 1000,
 };
 /*
-* Default Background Mode
-*/
+ * Default Background Mode
+ */
 let bgMode = process.env.BACKGROUND_MODE || "_triangle";
 /*
-* Default Exprie Date
-*/
+ * Default Exprie Date
+ */
 const DEFAULT_EXPIRE_DATE = 12 * UNIT_MS.HOUR;
 
 /**
@@ -67,14 +70,14 @@ class SessionHndl {
     getRandomToken() {
         let rt = "";
         for (let i = 0; i < 32; i++) {
-            rt += String.fromCharCode(Math.floor(Math.random() * 94) + 33);
+            rt += String.fromCharCode(randomInt(33, 127));
         }
         return rt;
     }
     /**
      * Creates a new session and sets the cookie
      * @param {Response} res The response object
-     * @returns {void} 
+     * @returns {void}
      */
     createSession(res) {
         let token = null;
@@ -199,23 +202,22 @@ var https = require("https");
 /** The webserver handler for http*/
 var http = require("http");
 
-
 app.use("/static", express.static(__dirname + PATH + "/static")); // publish the static files, that
 app.use(MOUNT, express.static(__dirname + PATH + MOUNT)); // publish the mount folder
 app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN)); // publish the Imagen folder
 app.use(cookieParser()); // Add a cookieParser for simpler cookie handling
 
 /**
- * Custom Storage Handler 
+ * Custom Storage Handler
  * => storage.js
  */
 const storage = require("./storage"); // Import the custom storage handler & Password
 const MDNS = require("mdns"); // Import MDNS => ask Padde!
 /**DEFAULT GROUP UUID */
-const DEFAULT_GROUP = storage.DEFAULT_GROUP; 
+const DEFAULT_GROUP = storage.DEFAULT_GROUP;
 storage.get(); // Load the config file before anything else
 // Print Server Logo
-for(let logo of LOGO.split("\n") ){
+for (let logo of LOGO.split("\n")) {
     console.log(logo);
 }
 function error(msg) {
@@ -256,13 +258,12 @@ app.get("/view.html", (req, res) => {
 /**
  * Reads the url folder recursively and returns the files as urls
  */
-function getFolderAsUrls(url, duration){
-    
+function getFolderAsUrls(url, duration) {
     let urls = [];
     fs.readdirSync(__dirname + PATH + url).forEach((file) => {
         // if file is a directory continue
 
-        if (fs.lstatSync(__dirname + PATH + url + "/" + file).isDirectory()){
+        if (fs.lstatSync(__dirname + PATH + url + "/" + file).isDirectory()) {
             urls.concat(getFolderAsUrls(url + "/" + file, duration));
             return;
         }
@@ -288,7 +289,7 @@ app.get("/api/view/pages/:page", (req, res) => {
     }
     // Get groups
     let cGroups = conf.refs[mac].group;
-    if(cGroups.length == 0){
+    if (cGroups.length == 0) {
         cGroups = [DEFAULT_GROUP];
     }
     // Collect all pages
@@ -303,12 +304,15 @@ app.get("/api/view/pages/:page", (req, res) => {
         if (conf.groups[cGroup].reload < minimum_reload) {
             minimum_reload = conf.groups[cGroup].reload;
         }
-        for(const url of conf.groups[cGroup].urls){
-            
-            if(url.url.endsWith("/")){
-             pages = pages.concat(getFolderAsUrls(url.url.substring(0, url.url.length - 1), url.duration));
-            }else
-                pages.push(url);
+        for (const url of conf.groups[cGroup].urls) {
+            if (url.url.endsWith("/")) {
+                pages = pages.concat(
+                    getFolderAsUrls(
+                        url.url.substring(0, url.url.length - 1),
+                        url.duration
+                    )
+                );
+            } else pages.push(url);
         }
     });
     // Sort urls files by alphabetical order
@@ -346,7 +350,6 @@ function readdirRecursive(path) {
     });
     return rt;
 }
-
 
 app.put("/api/view/currUrl", express.json(), (req, res) => {
     //
@@ -396,11 +399,11 @@ app.patch("/api/admin/setRefGroup", (req, res) => {
         error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
         return;
     }
-    if(conf.refs[req.query.ref].group.constructor.name === "String"){
+    if (conf.refs[req.query.ref].group.constructor.name === "String") {
         let orig = conf.refs[req.query.ref].group;
         conf.refs[req.query.ref].group = [];
-        if(orig != storage.DEFAULT_GROUP){
-            conf.refs[req.query.ref].group.push(orig);    
+        if (orig != storage.DEFAULT_GROUP) {
+            conf.refs[req.query.ref].group.push(orig);
         }
     }
     conf.refs[req.query.ref].group.push(req.query.group);
@@ -415,7 +418,7 @@ app.patch("/api/admin/delRefGroup", (req, res) => {
         error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
         return;
     }
-    if(conf.refs[req.query.ref].group.constructor.name === "String"){
+    if (conf.refs[req.query.ref].group.constructor.name === "String") {
         conf.refs[req.query.ref].group = [req.query.group];
     }
     let idx = conf.refs[req.query.ref].group.indexOf(req.query.group);

@@ -1,4 +1,5 @@
-const app = require("express")(); // The Webserver Lib
+const express = require("express"); // The Webserver Lib
+const app = express(); // The Webserver Object
 const uuidv4 = require("uuid").v4; // uuidv4 generator
 const cookieParser = require("cookie-parser"); // Cookie Parser Lib
 const fs = require("fs"); // File System Lib

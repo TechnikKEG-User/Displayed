@@ -45,15 +45,17 @@ export function initChangePassword() {
         oldPassword = btoa(oldPassword);
         newPassword = btoa(newPassword);
 
-        const res = await fetch(
-            "/api/admin/changePassword?oldPassword=" +
-                oldPassword +
-                "&password=" +
-                newPassword,
-            {
-                method: "GET",
-            }
-        );
+        const res = await fetch("/api/admin/changePassword", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                oldPassword: oldPassword,
+                password: newPassword,
+            }),
+        });
+
         if (res.status === 200) {
             changePasswordOldPW_e.value = "";
             changePasswordNewPW_e.value = "";

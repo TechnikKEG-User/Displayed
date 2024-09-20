@@ -576,10 +576,11 @@ app.post("/api/admin/createGroup", (req, res) => {
     res.send(JSON.stringify(rt, null, 4));
 });
 
-app.get("/api/admin/changePassword", (req, res) => {
+app.put("/api/admin/changePassword", express.json(), (req, res) => {
     if (!sessionHndl.check(req, res)) return;
-    let oldPassword = req.query.oldPassword;
-    let newPassword = req.query.password;
+
+    let oldPassword = req.body.oldPassword;
+    let newPassword = req.body.password;
 
     oldPassword = atob(oldPassword);
     newPassword = atob(newPassword);

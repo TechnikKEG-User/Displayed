@@ -1,9 +1,28 @@
-const express = require("express");
-const app = express();
-const uuidv4 = require("uuid").v4;
-const cookieParser = require("cookie-parser");
-const fs = require("fs");
+const app = require("express")(); // The Webserver Lib
+const uuidv4 = require("uuid").v4; // uuidv4 generator
+const cookieParser = require("cookie-parser"); // Cookie Parser Lib
+const fs = require("fs"); // File System Lib
+/**Logo of the software */
+const LOGO = `
++---------------------------------------------------+
+###  # ### ###  #     ##  #  # #### ###  \\
+#  # # #   #  # #    #  #  # # ###  #  # \\
+#  # #   # ###  #    ####   #  #    #  # \\
+###  # ##  #    #### #  #   #  #### ###  \\
 
+#  # ####  ##    | For Karl-Ernst-Gymnasium
+# #  #    #  #   |  Amorbach
+##   ###  #      | by @Paddecraft (Patrick Ulbricht)
+# #  #    # ##   | by @NprogramDev (Noah Pani)
+#  # ####  ##    | supervised by Alexander Sitko
+
+https://github.com/TechnikKEG/Displayed
++---------------------------------------------------+
+`
+
+/**
+ * Webserver Configuration
+ */
 const HTTP_S = {
     HTTP_ON: (process.env.HTTP_ON || "true") == "true",
     HTTP_PORT: parseInt(process.env.HTTP_PORT || "80"),
@@ -12,6 +31,9 @@ const HTTP_S = {
     HTTPS_CERT: process.env.HTTPS_CERT || "",
     HTTPS_KEY: process.env.HTTPS_KEY || "",
 };
+/**
+ * Units of time in milliseconds
+ */
 const UNIT_MS = {
     SECOND: 1000,
     MINUTE: 60 * 1000,
@@ -21,13 +43,26 @@ const UNIT_MS = {
     MONTH: 30 * 24 * 60 * 60 * 1000,
     YEAR: 365 * 24 * 60 * 60 * 1000,
 };
+/*
+* Default Background Mode
+*/
 let bgMode = process.env.BACKGROUND_MODE || "_triangle";
+/*
+* Default Exprie Date
+*/
 const DEFAULT_EXPIRE_DATE = 12 * UNIT_MS.HOUR;
 
+/**
+ * Session Handler for Admin Page Login
+ */
 class SessionHndl {
     constructor() {
         this.sessions = {};
     }
+    /**
+     * A util function to generate a random token
+     * @returns {string} A random token
+     */
     getRandomToken() {
         let rt = "";
         for (let i = 0; i < 32; i++) {
@@ -35,6 +70,11 @@ class SessionHndl {
         }
         return rt;
     }
+    /**
+     * Creates a new session and sets the cookie
+     * @param {Response} res The response object
+     * @returns {void} 
+     */
     createSession(res) {
         let token = null;
         do {
@@ -46,11 +86,23 @@ class SessionHndl {
         res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
         res.sendFile(__dirname + PATH + "/index.html");
     }
+    /**
+     * Renew the session by setting the cookie again
+     * @param {string} token The token of the session
+     * @param {Response} res The response object
+     * @returns {void}
+     */
     renewSession(token, res) {
         this.sessions[token].expires =
             DEFAULT_EXPIRE_DATE + new Date().getTime();
         res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
     }
+    /**
+     * Check if the session is valid
+     * @param {string} token The token of the session
+     * @param {Response} res The response object
+     * @returns {boolean} True if the session is valid
+     */
     checkSession(token, res) {
         // Delete Exp Sessions
         for (const key in this.sessions) {
@@ -64,7 +116,13 @@ class SessionHndl {
         this.renewSession(token, res);
         return true;
     }
-    // True if need login again
+    /**
+     * Authentication Function
+     * @param {Request} req The request object
+     * @param {Response} res The response object
+     * @param {string} authHeader The Authorization Header
+     * @returns {string} Null if the authentication was successful
+     */
     auth(req, res, authHeader) {
         const [type, credentials] = authHeader.split(" ");
 
@@ -79,18 +137,31 @@ class SessionHndl {
             ? null
             : "Invalid Password or Username";
     }
+    /**
+     * Ask for authentication
+     * @param {Request} req The request object
+     * @param {Response} res The response object
+     * @param {string} error The error message
+     * @returns {void}
+     */
     askAuth(req, res, error = "Authentication required.") {
         res.setHeader("X-Auth-Error", error);
         res.status(401).sendFile(__dirname + PATH + "/auth.html");
     }
+    /**
+     * Check if the session is valid or ask for authentication
+     * @param {Request} req The request object
+     * @param {Response} res The response object
+     * @param {boolean} redirect If true the function will redirect to the login page
+     * @returns {boolean} True if the session is valid
+     */
     check(req, res, redirect = false) {
         let session = req.cookies.sessionID;
         // If the session is valid => continue
-        console.log(this);
         if (this.checkSession(session, res)) return true;
         const authHeader = req.headers.authorization;
         if (!authHeader) {
-            console.log("No Auth Header");
+            console.error("No Auth Header");
             this.askAuth(req, res);
             return false;
         }
@@ -102,32 +173,50 @@ class SessionHndl {
         this.createSession(res);
         return true;
     }
+    /**
+     * Logout the user
+     * @param {Request} req The request object
+     * @param {Response} res The response object
+     * @returns {void}
+     */
     logout(req, res) {
         let session = req.cookies.sessionID;
         delete this.sessions[session];
         res.clearCookie("sessionID");
     }
 }
-
+/** The general session handler */
 const sessionHndl = new SessionHndl();
+/** The path where all the published files are */
 const PATH = "/public";
+/** The path of default published folder */
 const MOUNT = "/mount";
+/** The path of all static content (imaginary / test) files */
 const IMAGEN = "/imagen";
+/** The webserver handler for https*/
 var https = require("https");
+/** The webserver handler for http*/
 var http = require("http");
 
-app.use("/static", express.static(__dirname + PATH + "/static"));
-app.use(MOUNT, express.static(__dirname + PATH + MOUNT));
-app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN));
-app.use(cookieParser());
 
-const storage = require("./storage");
-const MDNS = require("mdns");
-const { inflate } = require("zlib");
-const DEFAULT_GROUP = storage.DEFAULT_GROUP;
-storage.get();
-console.log("Server Started");
+app.use("/static", express.static(__dirname + PATH + "/static")); // publish the static files, that
+app.use(MOUNT, express.static(__dirname + PATH + MOUNT)); // publish the mount folder
+app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN)); // publish the Imagen folder
+app.use(cookieParser()); // Add a cookieParser for simpler cookie handling
 
+/**
+ * Custom Storage Handler 
+ * => storage.js
+ */
+const storage = require("./storage"); // Import the custom storage handler & Password
+const MDNS = require("mdns"); // Import MDNS => ask Padde!
+/**DEFAULT GROUP UUID */
+const DEFAULT_GROUP = storage.DEFAULT_GROUP; 
+storage.get(); // Load the config file before anything else
+// Print Server Logo
+for(let logo of LOGO.split("\n") ){
+    console.log(logo);
+}
 function error(msg) {
     console.error(msg);
 }
@@ -163,48 +252,6 @@ app.get("/view.html", (req, res) => {
     res.sendFile(__dirname + PATH + "/view.html");
 });
 
-function getJustWork() {
-    const conf = storage.get();
-    let urls = [];
-    let generalDuration = 0;
-    let folder = "";
-    conf.groups[JUST_WORK_GROUP].urls.forEach((url) => {
-        if (url.url == "generalDuration") {
-            generalDuration = url.duration;
-        }
-        if (url.url == "folder") {
-            folder = url.duration;
-        }
-    });
-    folder = folder == "" ? "/" : folder;
-    fs.readdirSync(__dirname + PATH + folder).forEach((file) => {
-        // if file is a directory continue
-        if (fs.lstatSync(__dirname + PATH + folder + "/" + file).isDirectory())
-            return;
-        urls.push({ duration: generalDuration, url: folder + "/" + file });
-    });
-    urls.sort((a, b) => {
-        let urla = a.url.split("/");
-        urla = urla[urla.length - 1];
-        let urlb = b.url.split("/");
-        urlb = urlb[urlb.length - 1];
-        urla = urla.toLowerCase();
-        urlb = urlb.toLowerCase();
-
-        if (urla < urlb) {
-            return -1;
-        }
-        if (urla > urlb) {
-            return 1;
-        }
-        return 0;
-    });
-    return {
-        reload: conf.groups[JUST_WORK_GROUP].reload,
-        urls: urls,
-        backgroundMode: bgMode
-    };
-}
 /**
  * Reads the url folder recursively and returns the files as urls
  */
@@ -222,7 +269,9 @@ function getFolderAsUrls(url, duration){
     });
     return urls;
 }
-
+/**
+ * Get the current pages for a specific device by ref which is the MAC address
+ */
 app.get("/api/view/pages/:page", (req, res) => {
     // Delete .json file ending
     let pathx = req.params.page.split(".");
@@ -241,6 +290,7 @@ app.get("/api/view/pages/:page", (req, res) => {
     if(cGroups.length == 0){
         cGroups = [DEFAULT_GROUP];
     }
+    // Collect all pages
     let pages = [];
     let minimum_reload = conf.groups[cGroups[0]].reload;
     cGroups.forEach((cGroup) => {
@@ -255,13 +305,19 @@ app.get("/api/view/pages/:page", (req, res) => {
         for(const url of conf.groups[cGroup].urls){
             
             if(url.url.endsWith("/")){
-                console.log(url);
              pages = pages.concat(getFolderAsUrls(url.url.substring(0, url.url.length - 1), url.duration));
             }else
                 pages.push(url);
         }
     });
-    console.log(pages,minimum_reload);
+    // Sort urls files by alphabetical order
+    pages.sort((a, b) => {
+        let urlA = a.url.split("/").pop();
+        let urlB = b.url.split("/").pop();
+        if (urlA < urlB) return -1;
+        if (urlA > urlB) return 1;
+        return 0;
+    });
     res.send(
         JSON.stringify(
             { reload: minimum_reload, urls: pages, backgroundMode: bgMode },
@@ -290,20 +346,6 @@ function readdirRecursive(path) {
     return rt;
 }
 
-app.get("/api/admin/ls", (req, res) => {
-    if (!sessionHndl.check(req, res)) return;
-    let path =
-        __dirname + PATH + MOUNT + (req.query.path ? req.query.path : "");
-    let rt = readdirRecursive(path);
-    if (req.query.path == undefined) {
-        rt = rt.concat(readdirRecursive(__dirname + PATH + IMAGEN));
-    }
-    // Remove the _dirname from ever entry in rt
-    rt.forEach((entry) => {
-        entry.path = entry.path.replace(__dirname + PATH, "");
-    });
-    res.send(JSON.stringify(rt, null, 4));
-});
 
 app.put("/api/view/currUrl", express.json(), (req, res) => {
     //
@@ -323,6 +365,22 @@ app.put("/api/view/currUrl", express.json(), (req, res) => {
 /* -------------------------------------------------------------------------- */
 /*                                  Admin API                                 */
 /* -------------------------------------------------------------------------- */
+
+app.get("/api/admin/ls", (req, res) => {
+    if (!sessionHndl.check(req, res)) return;
+    let path =
+        __dirname + PATH + MOUNT + (req.query.path ? req.query.path : "");
+    let rt = readdirRecursive(path);
+    if (req.query.path == undefined) {
+        rt = rt.concat(readdirRecursive(__dirname + PATH + IMAGEN));
+    }
+    // Remove the _dirname from ever entry in rt
+    rt.forEach((entry) => {
+        entry.path = entry.path.replace(__dirname + PATH, "");
+    });
+    res.send(JSON.stringify(rt, null, 4));
+});
+
 app.get("/api/admin/alldata.json", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let strCl = structuredClone(storage.get());
@@ -494,8 +552,6 @@ app.get("/api/admin/changePassword", (req, res) => {
 
     oldPassword = atob(oldPassword);
     newPassword = atob(newPassword);
-
-    console.log(oldPassword, newPassword);
 
     if (!storage.checkPassword(oldPassword))
         return res.status(401).send("ERR: Incorrect Password");

@@ -6,9 +6,13 @@ const path = require("path");
  * @param {string} contained The path to check if it is contained in the other path
  * @returns {boolean} True if the target path contains the contained path, false otherwise
  */
-export function pathContains(target, contained) {
+function pathContains(target, contained) {
     const targetResolved = path.resolve(target);
     const containedResolved = path.resolve(contained);
 
     return targetResolved.includes(containedResolved);
 }
+
+module.exports = {
+    pathContains,
+};

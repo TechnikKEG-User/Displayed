@@ -229,7 +229,11 @@ const rateLimiter = expressRateLimit({
     },
 });
 
-if (process.env.DISABLE_RATE_LIMITER != "true") app.use(rateLimiter);
+if (process.env.DISABLE_RATE_LIMITER != "true") {
+    app.use(rateLimiter);
+} else {
+    console.warn("Rate limiter is disabled");
+}
 
 const csrfSecret = csrfTokens.secretSync(); // Generate a secret for the CSRF tokens
 
@@ -357,7 +361,7 @@ app.get("/api/view/pages/:page", (req, res) => {
     // Check of device
     if (conf.refs[mac] == undefined) {
         error("Ref not found! MAC: " + mac);
-        res.send("Ref not found! MAC: " + sanitizer(mac));
+        res.status(404).send("Ref not found! MAC: " + sanitizer(mac));
         return;
     }
     // Get groups
@@ -371,7 +375,9 @@ app.get("/api/view/pages/:page", (req, res) => {
     cGroups.forEach((cGroup) => {
         if (conf.groups[cGroup] == undefined) {
             error("Group not found! Group: " + cGroup);
-            res.send("Group not found! Group: " + cGroup);
+            res.status(404).send(
+                "Group not found! Group: " + sanitizer(cGroup)
+            );
             return;
         }
         if (conf.groups[cGroup].reload < minimum_reload) {
@@ -431,7 +437,7 @@ app.put("/api/view/currUrl", express.json(), (req, res) => {
     let url = req.body.url;
     if (conf.refs[mac] == undefined) {
         error("Ref not found! MAC: " + mac);
-        //res.send("Ref not found! MAC: " + mac);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(mac));
         return;
     }
     conf.refs[mac].preview = url;
@@ -477,6 +483,7 @@ app.patch("/api/admin/setRefGroup", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
     if (conf.refs[req.query.ref].group.constructor.name === "String") {
@@ -496,6 +503,7 @@ app.patch("/api/admin/delRefGroup", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
     if (conf.refs[req.query.ref].group.constructor.name === "String") {
@@ -504,6 +512,9 @@ app.patch("/api/admin/delRefGroup", (req, res) => {
     let idx = conf.refs[req.query.ref].group.indexOf(req.query.group);
     if (idx == -1) {
         error("delRefGroup ;Group not found! MAC: " + req.query.ref);
+        res.status(404).send(
+            "Group not found! MAC: " + sanitizer(req.query.ref)
+        );
         return;
     }
     conf.refs[req.query.ref].group.splice(idx, 1);
@@ -517,6 +528,9 @@ app.patch("/api/admin/setGroupName", (req, res) => {
     let conf = storage.get();
     if (conf.groups[req.query.group] == undefined) {
         error("setGroupName ;Group not found! UUID: " + req.query.group);
+        res.status(404).send(
+            "Group not found! UUID: " + sanitizer(req.query.group)
+        );
         return;
     }
     conf.groups[req.query.group].name = req.query.name;
@@ -529,6 +543,7 @@ app.patch("/api/admin/setRefName", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("setRefName ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
     conf.refs[req.query.ref].name = req.query.name;
@@ -541,14 +556,20 @@ app.delete("/api/admin/deleteGroup", (req, res) => {
     let conf = storage.get();
     if (conf.groups[req.query.group] == undefined) {
         error("deleteGroup ;Group not found! UUID: " + req.query.group);
+        res.status(404).send("Group not found! UUID: " + sanitizer(req.query.group));
         return;
     }
     if (req.query.group == JUST_WORK_GROUP) {
         error("deleteGroup ;Can't delete default group!");
+        res.status(400).send("Can't delete default group");
         return;
     }
     if (conf.groups[req.query.group].readonly) {
-        error("deleteGroup ;Group is readonly! UUID: " + req.query.group);
+        error(
+            "deleteGroup ;Group is readonly! UUID: " +
+                sanitizer(req.query.group)
+        );
+        res.status(400).send("Group is readonly");
         return;
     }
     delete conf.groups[req.query.group];
@@ -561,6 +582,7 @@ app.delete("/api/admin/deleteRef", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("deleteRef ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
     delete conf.refs[req.query.ref];
@@ -575,10 +597,12 @@ app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
     let uuid = req.query.group;
     if (conf.groups[uuid] == undefined) {
         error("setGroupContent ;Group not found! UUID: " + uuid);
+        res.status(404).send("Group not found! UUID: " + sanitizer(uuid));
         return;
     }
     if (conf.groups[uuid].readonly) {
         error("setGroupContent ;Group is readonly! UUID: " + uuid);
+        res.status(400).send("Group is readonly");
         return;
     }
 

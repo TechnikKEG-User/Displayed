@@ -520,9 +520,17 @@ app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
         error("setGroupContent ;Group is readonly! UUID: " + uuid);
         return;
     }
+
+    // Prevent prototype pollution
+    if (["prototype", "constructor", "__proto__"].includes(uuid)) {
+        error("setGroupContent ;Invalid Group Name! UUID: " + sanitizer(uuid));
+        res.status(400).send("Invalid Group Name");
+        return;
+    }
+
     conf.groups[uuid].name = body.name;
     conf.groups[uuid].reload = body.reload;
-    conf.groups[req.query.group].urls = body.urls;
+    conf.groups[uuid].urls = body.urls;
     storage.save(conf);
     res.send("OK");
 });

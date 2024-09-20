@@ -1,3 +1,4 @@
+// Server dependencies
 const express = require("express"); // The Webserver Lib
 const csrfTokens = new (require("csrf"))(); // Cross-Site Request Forgery Protection
 const { rateLimit: expressRateLimit } = require("express-rate-limit"); // Rate Limiting
@@ -8,6 +9,18 @@ const cookieParser = require("cookie-parser"); // Cookie Parser Lib
 const fs = require("fs"); // File System Lib
 const { randomInt } = require("crypto"); // Cryptographically secure random number generator
 const sanitizer = require("sanitizer"); // HTML escaping
+
+/** The webserver handler for https*/
+var https = require("https");
+/** The webserver handler for http*/
+var http = require("http");
+
+/**
+ * Custom Storage Handler
+ * => storage.js
+ */
+const storage = require("./storage"); // Import the custom storage handler & Password
+const { pathContains } = require("./lib/path");
 
 /**Logo of the software */
 const LOGO = `
@@ -208,15 +221,15 @@ const PATH = "/public";
 const MOUNT = "/mount";
 /** The path of all static content (imaginary / test) files */
 const IMAGEN = "/imagen";
-/** The webserver handler for https*/
-var https = require("https");
-/** The webserver handler for http*/
-var http = require("http");
 
 app.use("/static", express.static(__dirname + PATH + "/static")); // publish the static files, that
 app.use(MOUNT, express.static(__dirname + PATH + MOUNT)); // publish the mount folder
 app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN)); // publish the Imagen folder
 app.use(cookieParser()); // Add a cookieParser for simpler cookie handling
+
+/* -------------------------------------------------------------------------- */
+/*                                Rate Limiting                               */
+/* -------------------------------------------------------------------------- */
 
 const rateLimiter = expressRateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -234,6 +247,14 @@ if (process.env.DISABLE_RATE_LIMITER != "true") {
 } else {
     console.warn("Rate limiter is disabled");
 }
+
+/* -------------------------------------------------------------------------- */
+/*                              End Rate Limiting                             */
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/*                                    CSRF                                    */
+/* -------------------------------------------------------------------------- */
 
 const csrfSecret = csrfTokens.secretSync(); // Generate a secret for the CSRF tokens
 
@@ -266,7 +287,6 @@ app.use((req, res, next) => {
             httpOnly: true,
             expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
         });
-        console.log("Set CSRF token");
         return next();
     }
 
@@ -283,12 +303,9 @@ app.use((req, res, next) => {
     next();
 });
 
-/**
- * Custom Storage Handler
- * => storage.js
- */
-const storage = require("./storage"); // Import the custom storage handler & Password
-const { pathContains } = require("./lib/path");
+/* -------------------------------------------------------------------------- */
+/*                                  End CSRF                                  */
+/* -------------------------------------------------------------------------- */
 
 /**DEFAULT GROUP UUID */
 const DEFAULT_GROUP = storage.DEFAULT_GROUP;
@@ -556,7 +573,9 @@ app.delete("/api/admin/deleteGroup", (req, res) => {
     let conf = storage.get();
     if (conf.groups[req.query.group] == undefined) {
         error("deleteGroup ;Group not found! UUID: " + req.query.group);
-        res.status(404).send("Group not found! UUID: " + sanitizer(req.query.group));
+        res.status(404).send(
+            "Group not found! UUID: " + sanitizer(req.query.group)
+        );
         return;
     }
     if (req.query.group == JUST_WORK_GROUP) {

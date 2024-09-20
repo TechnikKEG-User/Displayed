@@ -1,4 +1,6 @@
 const express = require("express"); // The Webserver Lib
+const expressCsrf = require("express-csrf-protect");
+
 const uuidv4 = require("uuid").v4; // uuidv4 generator
 const MDNS = require("mdns"); // mDNS advertisement library
 const cookieParser = require("cookie-parser"); // Cookie Parser Lib
@@ -25,6 +27,7 @@ https://github.com/TechnikKEG/Displayed
 `;
 
 const app = express(); // The Webserver Object
+app.use(expressCsrf.enableCsrfProtect());
 
 /**
  * Webserver Configuration
@@ -89,7 +92,10 @@ class SessionHndl {
         this.sessions[token] = {
             expires: DEFAULT_EXPIRE_DATE + new Date().getTime(),
         };
-        res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
+        res.cookie("sessionID", token, {
+            maxAge: DEFAULT_EXPIRE_DATE,
+            httpOnly: true,
+        });
         res.sendFile(__dirname + PATH + "/index.html");
     }
     /**
@@ -101,7 +107,10 @@ class SessionHndl {
     renewSession(token, res) {
         this.sessions[token].expires =
             DEFAULT_EXPIRE_DATE + new Date().getTime();
-        res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
+        res.cookie("sessionID", token, {
+            maxAge: DEFAULT_EXPIRE_DATE,
+            httpOnly: true,
+        });
     }
     /**
      * Check if the session is valid

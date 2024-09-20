@@ -1,5 +1,5 @@
 import { initChangePassword } from "./changePassword.js";
-import { EVENTS, SERVER_ENDPOINTS } from "./constants.js";
+import { DEFAULT_GROUP_ID, EVENTS, SERVER_ENDPOINTS } from "./constants.js";
 import {
     changeLanguageSelect_e,
     changeLanguageSubmit_e,
@@ -152,45 +152,38 @@ function generateDevice(devName, devRef, previewSrc) {
 
     const sortingWrapper = document.createElement("div");
     sortingWrapper.classList.add("settings-device-sorting");
-
-    const sortingSelect = document.createElement("select");
-    sortingSelect.classList.add("settings-device-group-select");
-    for (const [uuid, group] of Object.entries(window.meta.groups)) {
-        const option = document.createElement("option");
-        option.value = uuid;
-        option.innerText = group.name;
-        if (uuid === devMeta.group) {
-            option.selected = true;
+    
+    for(const [groupRef, group] of Object.entries(window.meta.groups)){
+        if(groupRef === DEFAULT_GROUP_ID){
+            continue;
         }
-        sortingSelect.insertAdjacentElement("beforeend", option);
-    }
-
-    const sortingSave = document.createElement("div");
-    sortingSave.classList.add("settings-device-sorting-save", "icon");
-    sortingSave.innerText = "save";
-    sortingSave.onclick = () => {
-        const newGroup = sortingSelect.value;
-        devMeta.group = newGroup;
-        fetch(
-            SERVER_ENDPOINTS.setGroup + "?ref=" + devRef + "&group=" + newGroup,
-            {
-                method: "PATCH",
+        const groupWrapper = document.createElement("div");
+        const sortingOption = document.createElement("input");
+        sortingOption.type = "checkbox";
+        sortingOption.setAttribute("data-group", groupRef);
+        sortingOption.checked = devMeta.group.indexOf(groupRef) !== -1;
+        sortingOption.onchange = () => {
+            if(sortingOption.checked){
+                fetch(
+                    SERVER_ENDPOINTS.setGroup + "?ref=" + devRef + "&group=" + groupRef,
+                    {
+                        method: "PATCH",
+                    }
+                )
+            }else{
+                fetch(
+                    SERVER_ENDPOINTS.delGroup + "?ref=" + devRef + "&group=" + groupRef,
+                    {
+                        method: "PATCH",
+                    }
+                )
             }
-        )
-            .then(() => {
-                console.info(
-                    `SETTINGS:groupChange: device '${devName}' (${devRef}) was moved to group '${window.meta.groups[newGroup].name}' (${newGroup}).`
-                );
-                groupChanged = true;
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    };
-
-    sortingWrapper.appendChild(sortingSelect);
-    sortingWrapper.appendChild(sortingSave);
-
+        };
+        groupWrapper.appendChild(sortingOption);
+        groupWrapper.appendChild(document.createTextNode(group.name));
+        sortingWrapper.appendChild(groupWrapper);
+    }
+   
     info.appendChild(nameRow);
     info.appendChild(ref);
     info.appendChild(sortingWrapper);

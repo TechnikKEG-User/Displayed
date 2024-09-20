@@ -6,6 +6,7 @@ export const SERVER_ENDPOINTS = {
     ls: "/api/admin/ls",
 
     setGroup: "/api/admin/setRefGroup",
+    delGroup: "/api/admin/delRefGroup",
     setName: "/api/admin/setRefName",
     deleteRef: "/api/admin/deleteRef",
 

@@ -69,21 +69,25 @@ export function selectSidebarGroup(uuid) {
 export function generateSidebar(meta) {
     sidebarContent_e.innerHTML = "";
     const groups = [];
+    // Collect all groups
     for (const [uuid, group] of Object.entries(meta.groups)) {
         const { name } = group;
+        let deviceCount = 0;
+        for (const [_, device] of Object.entries(meta.refs)) {
+            const { group } = device;
+            if (group.indexOf(uuid) !== -1 || (group.length === 0 && uuid === DEFAULT_GROUP_ID)) {
+                deviceCount++;
+            }
+        }
         groups.push({
             uuid,
             name,
-            devCount: 0,
+            devCount: deviceCount,
         });
     }
-
-    for (const [_, device] of Object.entries(meta.refs)) {
-        const { group } = device;
-        const groupIndex = groups.findIndex((g) => g.uuid === group);
-        groups[groupIndex].devCount++;
-    }
-
+    
+    
+    // Generate sidebar groups
     for (const { name, uuid, devCount } of groups) {
         const group = generateSidebarGroup(name, uuid, devCount);
         sidebarContent_e.insertAdjacentElement("beforeend", group);

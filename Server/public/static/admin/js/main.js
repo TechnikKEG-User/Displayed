@@ -13,7 +13,7 @@ import {
     mainSlides_e,
     renameGroup_icon,
 } from "./elements.js";
-import { selectDirInUI, selectFileInUI } from "./explorer.js";
+import { selectDirInUI, selectFileInUI, selectFileOrDirInUI } from "./explorer.js";
 import { formatString, getLanguageData } from "./lang.js";
 
 export function loadGroup(uuid) {
@@ -40,6 +40,7 @@ export function loadGroup(uuid) {
 }
 
 const saveGroup = () => {
+    if(window.meta.groups[window.currentGroup].duration === undefined) window.meta.groups[window.currentGroup].duration = 15;
     return fetch(
         SERVER_ENDPOINTS.setGroupContent + "?group=" + window.currentGroup,
         {
@@ -105,7 +106,7 @@ export function generateSlideEntry(type, target, duration, index) {
     cloudPath_icon.classList.add("icon", "main-slide-type-cloud-picker");
     cloudPath_icon.innerText = "folder";
     cloudPath_icon.onclick = () => {
-        selectFileInUI((path) => {
+        selectFileOrDirInUI((path) => {
             cloudPath.innerText = path;
             slide.url = path;
 

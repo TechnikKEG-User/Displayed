@@ -1,5 +1,6 @@
 const express = require("express"); // The Webserver Lib
 const csrfTokens = new (require("csrf"))(); // Cross-Site Request Forgery Protection
+const { rateLimit: expressRateLimit } = require("express-rate-limit"); // Rate Limiting
 
 const uuidv4 = require("uuid").v4; // uuidv4 generator
 const MDNS = require("mdns"); // mDNS advertisement library
@@ -216,6 +217,19 @@ app.use("/static", express.static(__dirname + PATH + "/static")); // publish the
 app.use(MOUNT, express.static(__dirname + PATH + MOUNT)); // publish the mount folder
 app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN)); // publish the Imagen folder
 app.use(cookieParser()); // Add a cookieParser for simpler cookie handling
+
+const rateLimiter = expressRateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 1000, // limit each IP to 1500 requests per windowMs
+    standardHeaders: "draft-7",
+    message:
+        "Too many requests from this IP, please try again after 15 minutes",
+    skip: (req) => {
+        return !req.path.startsWith("/api/admin/");
+    },
+});
+
+if (process.env.DISABLE_RATE_LIMITER != "true") app.use(rateLimiter);
 
 const csrfSecret = csrfTokens.secretSync(); // Generate a secret for the CSRF tokens
 

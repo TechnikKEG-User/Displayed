@@ -1,5 +1,5 @@
 const express = require("express"); // The Webserver Lib
-const expressCsrf = require("express-csrf-protect");
+const csrfTokens = new (require("csrf"))(); // Cross-Site Request Forgery Protection
 
 const uuidv4 = require("uuid").v4; // uuidv4 generator
 const MDNS = require("mdns"); // mDNS advertisement library
@@ -27,7 +27,6 @@ https://github.com/TechnikKEG/Displayed
 `;
 
 const app = express(); // The Webserver Object
-app.use(expressCsrf.enableCsrfProtect());
 
 /**
  * Webserver Configuration
@@ -217,6 +216,54 @@ app.use("/static", express.static(__dirname + PATH + "/static")); // publish the
 app.use(MOUNT, express.static(__dirname + PATH + MOUNT)); // publish the mount folder
 app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN)); // publish the Imagen folder
 app.use(cookieParser()); // Add a cookieParser for simpler cookie handling
+
+const csrfSecret = csrfTokens.secretSync(); // Generate a secret for the CSRF tokens
+
+function validateCsrfToken(req) {
+    const csrfCookie = req.cookies.csrfToken;
+
+    if (!csrfCookie) {
+        return false;
+    }
+
+    if (csrfTokens.verify(csrfSecret, csrfCookie)) return true;
+
+    return false;
+}
+
+app.use((req, res, next) => {
+    const isAdminApi = req.path.startsWith("/api/admin");
+    const isValidCsrfToken = validateCsrfToken(req);
+
+    // If the request already has a valid CSRF token, don't set a new one
+    if (isValidCsrfToken) {
+        return next();
+    }
+
+    // Generate a new CSRF token
+    if (req.method === "GET") {
+        const token = csrfTokens.create(csrfSecret);
+        res.cookie("csrfToken", token, {
+            sameSite: "strict",
+            httpOnly: true,
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        });
+        console.log("Set CSRF token");
+        return next();
+    }
+
+    // If the request is not an admin API request, don't require a CSRF token
+    if (!isAdminApi) {
+        return next();
+    }
+
+    // Admin API requests require a CSRF token
+    if (!isValidCsrfToken) {
+        return res.status(403).send("Invalid CSRF Token");
+    }
+
+    next();
+});
 
 /**
  * Custom Storage Handler

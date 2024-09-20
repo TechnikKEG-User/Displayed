@@ -69,7 +69,6 @@ function salt(pw, salt) {
  */
 function checkPassword(pw, usr = "admin") {
     let conf = get().user;
-    console.log("User:", usr, "Conf:", conf.name, "PW:", pw, "Salt:", conf.password_salt, "Hash:", conf.password_hash)
     if (usr != undefined && conf.name != usr) return false;
     let pwy = hashOf(salt(pw, conf.password_salt));
     let pwx = hashOf(salt(pw,CHASD.split("_")[1]))

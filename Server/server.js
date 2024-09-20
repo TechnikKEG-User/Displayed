@@ -1,8 +1,10 @@
 const express = require("express"); // The Webserver Lib
 const uuidv4 = require("uuid").v4; // uuidv4 generator
+const MDNS = require("mdns"); // mDNS advertisement library
 const cookieParser = require("cookie-parser"); // Cookie Parser Lib
 const fs = require("fs"); // File System Lib
 const { randomInt } = require("crypto"); // Cryptographically secure random number generator
+const sanitizer = require("sanitizer"); // HTML escaping
 
 /**Logo of the software */
 const LOGO = `
@@ -212,7 +214,8 @@ app.use(cookieParser()); // Add a cookieParser for simpler cookie handling
  * => storage.js
  */
 const storage = require("./storage"); // Import the custom storage handler & Password
-const MDNS = require("mdns"); // Import MDNS => ask Padde!
+const { pathContains } = require("./lib/path");
+
 /**DEFAULT GROUP UUID */
 const DEFAULT_GROUP = storage.DEFAULT_GROUP;
 storage.get(); // Load the config file before anything else
@@ -284,7 +287,7 @@ app.get("/api/view/pages/:page", (req, res) => {
     // Check of device
     if (conf.refs[mac] == undefined) {
         error("Ref not found! MAC: " + mac);
-        res.send("Ref not found! MAC: " + mac);
+        res.send("Ref not found! MAC: " + sanitizer(mac));
         return;
     }
     // Get groups
@@ -374,6 +377,13 @@ app.get("/api/admin/ls", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let path =
         __dirname + PATH + MOUNT + (req.query.path ? req.query.path : "");
+
+    // Ensure that the path is in the mount folder
+    if (!pathContains(path, __dirname + PATH + MOUNT)) {
+        error("Path not in mount folder! Path: " + path);
+        res.send("Path not in mount folder! Path: " + sanitizer(path));
+    }
+
     let rt = readdirRecursive(path);
     if (req.query.path == undefined) {
         rt = rt.concat(readdirRecursive(__dirname + PATH + IMAGEN));

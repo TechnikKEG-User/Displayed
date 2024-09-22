@@ -329,16 +329,30 @@
     border-top: var(--border-width) solid var(--border-color-light);
 }
 
-.main-slide-timing-label {
+.main-slide-timing-label,
+.main-slide-filter-label {
     margin-right: var(--padding-layer);
+    margin-left: var(--padding-layer);
 }
 
 .main-slide-timing-input {
     width: 5em;
+    margin-right: var(--padding-layer);
 }
-
+.main-slide-filter-input {
+    width: 10em;
+    margin-right: var(--padding-layer);
+}
+.main-slide-filter-help {
+    color: var(--text-color-gray);
+    font-size: var(--text-small-size);
+    padding-left: 0.2em;
+}
 .main-slide-timing-save {
     margin-left: var(--padding-small);
+}
+.main-slide-timing-save-notice {
+    color: var(--highlight-save-color);
 }
 
 /* -------------------------------------------------------------------------- */

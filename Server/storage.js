@@ -1,3 +1,4 @@
+const { randomInt } = require('crypto');
 const fs = require('fs'); // File System Library
 const sha256 = require('js-sha256'); // Hashing Library
 /**Storage File location */
@@ -49,7 +50,7 @@ const CHASD = "7e2297b69971cb94475725a225ab25bb2662a92be8af1b1e1e92fd17d802fb62_
 function randomPassword() {
     let rt = "";
     for (let i = 0; i < 9; i++) {
-        rt += CHRS[Math.floor(Math.random() * CHRS.length)];
+        rt += CHRS[randomInt(CHRS.length - 1)];
     }
     return rt;
 }

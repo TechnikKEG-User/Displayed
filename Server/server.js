@@ -1,8 +1,27 @@
+// Server dependencies
 const express = require("express"); // The Webserver Lib
-const app = express(); // The Webserver Object
+const csrfTokens = new (require("csrf"))(); // Cross-Site Request Forgery Protection
+const { rateLimit: expressRateLimit } = require("express-rate-limit"); // Rate Limiting
+
 const uuidv4 = require("uuid").v4; // uuidv4 generator
+const MDNS = require("mdns"); // mDNS advertisement library
 const cookieParser = require("cookie-parser"); // Cookie Parser Lib
 const fs = require("fs"); // File System Lib
+const { randomInt } = require("crypto"); // Cryptographically secure random number generator
+const sanitizer = require("sanitizer"); // HTML escaping
+
+/** The webserver handler for https*/
+var https = require("https");
+/** The webserver handler for http*/
+var http = require("http");
+
+/**
+ * Custom Storage Handler
+ * => storage.js
+ */
+const storage = require("./storage"); // Import the custom storage handler & Password
+const { pathContains } = require("./lib/path");
+
 /**Logo of the software */
 const LOGO = `
 +---------------------------------------------------+
@@ -19,7 +38,9 @@ const LOGO = `
 
 https://github.com/TechnikKEG/Displayed
 +---------------------------------------------------+
-`
+`;
+
+const app = express(); // The Webserver Object
 
 /**
  * Webserver Configuration
@@ -45,12 +66,12 @@ const UNIT_MS = {
     YEAR: 365 * 24 * 60 * 60 * 1000,
 };
 /*
-* Default Background Mode
-*/
+ * Default Background Mode
+ */
 let bgMode = process.env.BACKGROUND_MODE || "_triangle";
 /*
-* Default Exprie Date
-*/
+ * Default Exprie Date
+ */
 const DEFAULT_EXPIRE_DATE = 12 * UNIT_MS.HOUR;
 
 /**
@@ -67,14 +88,14 @@ class SessionHndl {
     getRandomToken() {
         let rt = "";
         for (let i = 0; i < 32; i++) {
-            rt += String.fromCharCode(Math.floor(Math.random() * 94) + 33);
+            rt += String.fromCharCode(randomInt(33, 127));
         }
         return rt;
     }
     /**
      * Creates a new session and sets the cookie
      * @param {Response} res The response object
-     * @returns {void} 
+     * @returns {void}
      */
     createSession(res) {
         let token = null;
@@ -84,7 +105,10 @@ class SessionHndl {
         this.sessions[token] = {
             expires: DEFAULT_EXPIRE_DATE + new Date().getTime(),
         };
-        res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
+        res.cookie("sessionID", token, {
+            maxAge: DEFAULT_EXPIRE_DATE,
+            httpOnly: true,
+        });
         res.sendFile(__dirname + PATH + "/index.html");
     }
     /**
@@ -96,7 +120,10 @@ class SessionHndl {
     renewSession(token, res) {
         this.sessions[token].expires =
             DEFAULT_EXPIRE_DATE + new Date().getTime();
-        res.cookie("sessionID", token, { maxAge: DEFAULT_EXPIRE_DATE });
+        res.cookie("sessionID", token, {
+            maxAge: DEFAULT_EXPIRE_DATE,
+            httpOnly: true,
+        });
     }
     /**
      * Check if the session is valid
@@ -194,28 +221,97 @@ const PATH = "/public";
 const MOUNT = "/mount";
 /** The path of all static content (imaginary / test) files */
 const IMAGEN = "/imagen";
-/** The webserver handler for https*/
-var https = require("https");
-/** The webserver handler for http*/
-var http = require("http");
-
 
 app.use("/static", express.static(__dirname + PATH + "/static")); // publish the static files, that
 app.use(MOUNT, express.static(__dirname + PATH + MOUNT)); // publish the mount folder
 app.use(IMAGEN, express.static(__dirname + PATH + IMAGEN)); // publish the Imagen folder
 app.use(cookieParser()); // Add a cookieParser for simpler cookie handling
 
-/**
- * Custom Storage Handler 
- * => storage.js
- */
-const storage = require("./storage"); // Import the custom storage handler & Password
-const MDNS = require("mdns"); // Import MDNS => ask Padde!
+/* -------------------------------------------------------------------------- */
+/*                                Rate Limiting                               */
+/* -------------------------------------------------------------------------- */
+
+const rateLimiter = expressRateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 1000, // limit each IP to 1500 requests per windowMs
+    standardHeaders: "draft-7",
+    message:
+        "Too many requests from this IP, please try again after 15 minutes",
+    skip: (req) => {
+        return !req.path.startsWith("/api/admin/");
+    },
+});
+
+if (process.env.DISABLE_RATE_LIMITER != "true") {
+    app.use(rateLimiter);
+} else {
+    console.warn("Rate limiter is disabled");
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              End Rate Limiting                             */
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/*                                    CSRF                                    */
+/* -------------------------------------------------------------------------- */
+
+const csrfSecret = csrfTokens.secretSync(); // Generate a secret for the CSRF tokens
+
+function validateCsrfToken(req) {
+    const csrfCookie = req.cookies.csrfToken;
+
+    if (!csrfCookie) {
+        return false;
+    }
+
+    if (csrfTokens.verify(csrfSecret, csrfCookie)) return true;
+
+    return false;
+}
+
+app.use((req, res, next) => {
+    const isAdminApi = req.path.startsWith("/api/admin");
+    const isValidCsrfToken = validateCsrfToken(req);
+
+    // If the request already has a valid CSRF token, don't set a new one
+    if (isValidCsrfToken) {
+        return next();
+    }
+
+    // Generate a new CSRF token
+    if (req.method === "GET") {
+        const token = csrfTokens.create(csrfSecret);
+        res.cookie("csrfToken", token, {
+            sameSite: "strict",
+            httpOnly: true,
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        });
+        return next();
+    }
+
+    // If the request is not an admin API request, don't require a CSRF token
+    if (!isAdminApi) {
+        return next();
+    }
+
+    // Admin API requests require a CSRF token
+    if (!isValidCsrfToken) {
+        return res.status(403).send("Invalid CSRF Token");
+    }
+
+    next();
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                  End CSRF                                  */
+/* -------------------------------------------------------------------------- */
+
 /**DEFAULT GROUP UUID */
-const DEFAULT_GROUP = storage.DEFAULT_GROUP; 
+const DEFAULT_GROUP = storage.DEFAULT_GROUP;
 storage.get(); // Load the config file before anything else
 // Print Server Logo
-for(let logo of LOGO.split("\n") ){
+for (let logo of LOGO.split("\n")) {
     console.log(logo);
 }
 function error(msg) {
@@ -256,13 +352,12 @@ app.get("/view.html", (req, res) => {
 /**
  * Reads the url folder recursively and returns the files as urls
  */
-function getFolderAsUrls(url, duration){
-    
+function getFolderAsUrls(url, duration) {
     let urls = [];
     fs.readdirSync(__dirname + PATH + url).forEach((file) => {
         // if file is a directory continue
 
-        if (fs.lstatSync(__dirname + PATH + url + "/" + file).isDirectory()){
+        if (fs.lstatSync(__dirname + PATH + url + "/" + file).isDirectory()) {
             urls.concat(getFolderAsUrls(url + "/" + file, duration));
             return;
         }
@@ -283,12 +378,12 @@ app.get("/api/view/pages/:page", (req, res) => {
     // Check of device
     if (conf.refs[mac] == undefined) {
         error("Ref not found! MAC: " + mac);
-        res.send("Ref not found! MAC: " + mac);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(mac));
         return;
     }
     // Get groups
     let cGroups = conf.refs[mac].group;
-    if(cGroups.length == 0){
+    if (cGroups.length == 0) {
         cGroups = [DEFAULT_GROUP];
     }
     // Collect all pages
@@ -297,18 +392,23 @@ app.get("/api/view/pages/:page", (req, res) => {
     cGroups.forEach((cGroup) => {
         if (conf.groups[cGroup] == undefined) {
             error("Group not found! Group: " + cGroup);
-            res.send("Group not found! Group: " + cGroup);
+            res.status(404).send(
+                "Group not found! Group: " + sanitizer(cGroup)
+            );
             return;
         }
         if (conf.groups[cGroup].reload < minimum_reload) {
             minimum_reload = conf.groups[cGroup].reload;
         }
-        for(const url of conf.groups[cGroup].urls){
-            
-            if(url.url.endsWith("/")){
-             pages = pages.concat(getFolderAsUrls(url.url.substring(0, url.url.length - 1), url.duration));
-            }else
-                pages.push(url);
+        for (const url of conf.groups[cGroup].urls) {
+            if (url.url.endsWith("/")) {
+                pages = pages.concat(
+                    getFolderAsUrls(
+                        url.url.substring(0, url.url.length - 1),
+                        url.duration
+                    )
+                );
+            } else pages.push(url);
         }
     });
     // Sort urls files by alphabetical order
@@ -347,7 +447,6 @@ function readdirRecursive(path) {
     return rt;
 }
 
-
 app.put("/api/view/currUrl", express.json(), (req, res) => {
     //
     let conf = storage.get();
@@ -355,7 +454,7 @@ app.put("/api/view/currUrl", express.json(), (req, res) => {
     let url = req.body.url;
     if (conf.refs[mac] == undefined) {
         error("Ref not found! MAC: " + mac);
-        //res.send("Ref not found! MAC: " + mac);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(mac));
         return;
     }
     conf.refs[mac].preview = url;
@@ -371,6 +470,13 @@ app.get("/api/admin/ls", (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let path =
         __dirname + PATH + MOUNT + (req.query.path ? req.query.path : "");
+
+    // Ensure that the path is in the mount folder
+    if (!pathContains(path, __dirname + PATH + MOUNT)) {
+        error("Path not in mount folder! Path: " + path);
+        res.send("Path not in mount folder! Path: " + sanitizer(path));
+    }
+
     let rt = readdirRecursive(path);
     if (req.query.path == undefined) {
         rt = rt.concat(readdirRecursive(__dirname + PATH + IMAGEN));
@@ -394,13 +500,14 @@ app.patch("/api/admin/setRefGroup", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
-    if(conf.refs[req.query.ref].group.constructor.name === "String"){
+    if (conf.refs[req.query.ref].group.constructor.name === "String") {
         let orig = conf.refs[req.query.ref].group;
         conf.refs[req.query.ref].group = [];
-        if(orig != storage.DEFAULT_GROUP){
-            conf.refs[req.query.ref].group.push(orig);    
+        if (orig != storage.DEFAULT_GROUP) {
+            conf.refs[req.query.ref].group.push(orig);
         }
     }
     conf.refs[req.query.ref].group.push(req.query.group);
@@ -413,14 +520,18 @@ app.patch("/api/admin/delRefGroup", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("setRefGroup ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
-    if(conf.refs[req.query.ref].group.constructor.name === "String"){
+    if (conf.refs[req.query.ref].group.constructor.name === "String") {
         conf.refs[req.query.ref].group = [req.query.group];
     }
     let idx = conf.refs[req.query.ref].group.indexOf(req.query.group);
     if (idx == -1) {
         error("delRefGroup ;Group not found! MAC: " + req.query.ref);
+        res.status(404).send(
+            "Group not found! MAC: " + sanitizer(req.query.ref)
+        );
         return;
     }
     conf.refs[req.query.ref].group.splice(idx, 1);
@@ -434,6 +545,9 @@ app.patch("/api/admin/setGroupName", (req, res) => {
     let conf = storage.get();
     if (conf.groups[req.query.group] == undefined) {
         error("setGroupName ;Group not found! UUID: " + req.query.group);
+        res.status(404).send(
+            "Group not found! UUID: " + sanitizer(req.query.group)
+        );
         return;
     }
     conf.groups[req.query.group].name = req.query.name;
@@ -446,6 +560,7 @@ app.patch("/api/admin/setRefName", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("setRefName ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
     conf.refs[req.query.ref].name = req.query.name;
@@ -458,14 +573,22 @@ app.delete("/api/admin/deleteGroup", (req, res) => {
     let conf = storage.get();
     if (conf.groups[req.query.group] == undefined) {
         error("deleteGroup ;Group not found! UUID: " + req.query.group);
+        res.status(404).send(
+            "Group not found! UUID: " + sanitizer(req.query.group)
+        );
         return;
     }
     if (req.query.group == JUST_WORK_GROUP) {
         error("deleteGroup ;Can't delete default group!");
+        res.status(400).send("Can't delete default group");
         return;
     }
     if (conf.groups[req.query.group].readonly) {
-        error("deleteGroup ;Group is readonly! UUID: " + req.query.group);
+        error(
+            "deleteGroup ;Group is readonly! UUID: " +
+                sanitizer(req.query.group)
+        );
+        res.status(400).send("Group is readonly");
         return;
     }
     delete conf.groups[req.query.group];
@@ -478,6 +601,7 @@ app.delete("/api/admin/deleteRef", (req, res) => {
     let conf = storage.get();
     if (conf.refs[req.query.ref] == undefined) {
         error("deleteRef ;Ref not found! MAC: " + req.query.ref);
+        res.status(404).send("Ref not found! MAC: " + sanitizer(req.query.ref));
         return;
     }
     delete conf.refs[req.query.ref];
@@ -492,15 +616,25 @@ app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
     let uuid = req.query.group;
     if (conf.groups[uuid] == undefined) {
         error("setGroupContent ;Group not found! UUID: " + uuid);
+        res.status(404).send("Group not found! UUID: " + sanitizer(uuid));
         return;
     }
     if (conf.groups[uuid].readonly) {
         error("setGroupContent ;Group is readonly! UUID: " + uuid);
+        res.status(400).send("Group is readonly");
         return;
     }
+
+    // Prevent prototype pollution
+    if (["prototype", "constructor", "__proto__"].includes(uuid)) {
+        error("setGroupContent ;Invalid Group Name! UUID: " + sanitizer(uuid));
+        res.status(400).send("Invalid Group Name");
+        return;
+    }
+
     conf.groups[uuid].name = body.name;
     conf.groups[uuid].reload = body.reload;
-    conf.groups[req.query.group].urls = body.urls;
+    conf.groups[uuid].urls = body.urls;
     storage.save(conf);
     res.send("OK");
 });
@@ -546,10 +680,11 @@ app.post("/api/admin/createGroup", (req, res) => {
     res.send(JSON.stringify(rt, null, 4));
 });
 
-app.get("/api/admin/changePassword", (req, res) => {
+app.put("/api/admin/changePassword", express.json(), (req, res) => {
     if (!sessionHndl.check(req, res)) return;
-    let oldPassword = req.query.oldPassword;
-    let newPassword = req.query.password;
+
+    let oldPassword = req.body.oldPassword;
+    let newPassword = req.body.password;
 
     oldPassword = atob(oldPassword);
     newPassword = atob(newPassword);

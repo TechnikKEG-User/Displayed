@@ -10,6 +10,8 @@ const fs = require("fs"); // File System Lib
 const { randomInt } = require("crypto"); // Cryptographically secure random number generator
 const sanitizer = require("sanitizer"); // HTML escaping
 
+const DEFAULT_FILTER_REGEX = /\/\.[^\/]+$/; //Default Regex Filter for hidden files
+
 /** The webserver handler for https*/
 var https = require("https");
 /** The webserver handler for http*/
@@ -352,15 +354,17 @@ app.get("/view.html", (req, res) => {
 /**
  * Reads the url folder recursively and returns the files as urls
  */
-function getFolderAsUrls(url, duration) {
+function getFolderAsUrls(url, duration,filter) {
     let urls = [];
     fs.readdirSync(__dirname + PATH + url).forEach((file) => {
         // if file is a directory continue
 
         if (fs.lstatSync(__dirname + PATH + url + "/" + file).isDirectory()) {
-            urls.concat(getFolderAsUrls(url + "/" + file, duration));
+            let sub = getFolderAsUrls(url + "/" + file, duration,filter);
+            urls = urls.concat(sub);
             return;
         }
+        if(filter.test(url + "/" + file)) return;
         urls.push({ duration: duration, url: url + "/" + file });
     });
     return urls;
@@ -400,12 +404,15 @@ app.get("/api/view/pages/:page", (req, res) => {
         if (conf.groups[cGroup].reload < minimum_reload) {
             minimum_reload = conf.groups[cGroup].reload;
         }
+        
         for (const url of conf.groups[cGroup].urls) {
+            let filter = new RegExp(url.filter || "^$a");
             if (url.url.endsWith("/")) {
                 pages = pages.concat(
                     getFolderAsUrls(
                         url.url.substring(0, url.url.length - 1),
-                        url.duration
+                        url.duration,
+                        filter
                     )
                 );
             } else pages.push(url);
@@ -458,7 +465,7 @@ app.put("/api/view/currUrl", express.json(), (req, res) => {
         return;
     }
     conf.refs[mac].preview = url;
-    storage.save(conf);
+    //storage.save(conf);
     res.send("OK");
 });
 
@@ -609,6 +616,16 @@ app.delete("/api/admin/deleteRef", (req, res) => {
     res.send("OK");
 });
 
+function checkUrls(urls){
+    for(let i = 0; i < urls.length; i++){
+        if(urls[i].duration == undefined) urls[i].duration = 15;
+        if(urls[i].url == undefined) urls[i].url = "/imagen/banner.png";
+        if(urls[i].type == undefined) urls[i].type = "cloud";
+        if(urls[i].filter == undefined) urls[i].filter = DEFAULT_FILTER_REGEX.source;
+    }
+    return urls;
+}
+
 app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
     if (!sessionHndl.check(req, res)) return;
     let conf = storage.get();
@@ -634,7 +651,7 @@ app.put("/api/admin/setGroupContent", express.json(), (req, res) => {
 
     conf.groups[uuid].name = body.name;
     conf.groups[uuid].reload = body.reload;
-    conf.groups[uuid].urls = body.urls;
+    conf.groups[uuid].urls = checkUrls(body.urls);
     storage.save(conf);
     res.send("OK");
 });

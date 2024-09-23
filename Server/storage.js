@@ -92,7 +92,11 @@ let _store = null;
  * */
 function save(conf) {
     _store = conf;
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(_store, null, 4));
+    let cpy = Object.assign({}, _store);
+    for(let i in _store.refs){
+        cpy.refs[i].preview = "";
+    }
+    fs.writeFileSync(STORAGE_FILE, JSON.stringify(cpy, null, 4));
 }
 /**
  * Fix the groups in the refs of the configuration

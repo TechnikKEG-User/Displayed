@@ -16,6 +16,8 @@ import {
 import { selectDirInUI, selectFileInUI, selectFileOrDirInUI } from "./explorer.js";
 import { formatString, getLanguageData } from "./lang.js";
 
+const DEFAULT_FILTER_REGEX = /\/\.[^\/]+$/;
+
 export function loadGroup(uuid) {
     const group = window.meta.groups[uuid];
     const lang = getLanguageData();
@@ -38,6 +40,19 @@ export function loadGroup(uuid) {
 
     generateSlides(window.meta);
 }
+    function convertGlobToRegex(glob) {
+        // Escape special regex characters
+        const specialChars = /[.+^${}()|[\]\\]/g;
+        const escapedGlob = glob.replace(specialChars, '\\$&');
+    
+        // Replace glob wildcards with regex equivalents
+        const regexString = escapedGlob
+            .replace(/\*/g, '.*')  // Convert * to match any number of characters
+            .replace(/\?/g, '.');  // Convert ? to match a single character
+    
+        // Create a regex to match the whole string
+        return `^${regexString}$`;
+    }
 
 const saveGroup = () => {
     if(window.meta.groups[window.currentGroup].duration === undefined) window.meta.groups[window.currentGroup].duration = 15;
@@ -53,7 +68,7 @@ const saveGroup = () => {
     );
 };
 
-export function generateSlideEntry(type, target, duration, index) {
+export function generateSlideEntry(type, target, duration, index, filterRegex) {
     const lang = getLanguageData();
 
     const group = window.meta.groups[window.currentGroup];
@@ -173,10 +188,12 @@ export function generateSlideEntry(type, target, duration, index) {
     timingInput.max = 60 * 60;
     timingInput.value = duration;
 
+
     const timingSave = document.createElement("div");
     timingSave.classList.add("icon", "main-slide-timing-save");
     timingSave.innerText = "save";
     timingSave.onclick = () => {
+        
         const value = timingInput.value;
         if (value.length == 0) {
             return;
@@ -188,14 +205,55 @@ export function generateSlideEntry(type, target, duration, index) {
         }
 
         slide.duration = parsedValue;
+        
+        slide.filter = new RegExp(filterRegex).source;
+
+        timingSave.classList.remove("main-slide-timing-save-notice");
 
         saveGroup().catch((err) => {
             console.error(err);
         });
     };
+    
+    timingInput.oninput = () => {
+        timingSave.classList.add("main-slide-timing-save-notice");
+    };
+
+
+    const filterLabel = document.createElement("div");
+    filterLabel.classList.add("main-slide-filter-label");
+    filterLabel.innerText = formatString(lang.main.filter, {});
+
+    const filterInput = document.createElement("input");
+    filterInput.classList.add("main-slide-filter-input");
+    filterInput.ariaPlaceholder = "Regex Filter";
+    filterInput.value = filterRegex || "";
+    filterInput.oninput = () => {
+        timingSave.classList.add("main-slide-timing-save-notice");
+    };
+    const filterHelper = document.createElement("span");
+    filterHelper.classList.add("icon", "main-slide-filter-help");
+    filterHelper.innerText = "help";
+
+    filterLabel.appendChild(filterHelper);
+
+    filterLabel.onclick = () => {
+        // Ask for confirmation
+        if (!confirm(lang.main.filter_help)) return;
+        let filter = prompt(lang.main.filter_glob);
+        if (filter === null) return;
+        if (filter.length === 0) {
+            filter = DEFAULT_FILTER_REGEX.source;
+        }
+        filterInput.value = convertGlobToRegex(filter);
+        filterInput.onchange();
+    };
 
     timingWrapper.appendChild(timingLabel);
     timingWrapper.appendChild(timingInput);
+    
+    timingWrapper.appendChild(filterLabel);
+    timingWrapper.appendChild(filterInput);
     timingWrapper.appendChild(timingSave);
 
     settings.appendChild(typeSelectorWrapper);
@@ -421,13 +479,15 @@ export function generateJustWorkSlides(meta) {
 export function generateSlides(meta) {
     const group = meta.groups[window.currentGroup];
     group.urls.forEach((slide, index) => {
+        console.log(slide);
         mainSlides_e.insertAdjacentElement(
             "beforeend",
             generateSlideEntry(
                 slide.url.startsWith("/") ? "cloud" : "remote",
                 slide.url,
                 slide.duration,
-                index
+                index,
+                slide.filter
             )
         );
     });
@@ -452,7 +512,7 @@ export function initMain() {
                 const index = group.urls.length - 1;
                 mainSlides_e.insertAdjacentElement(
                     "beforeend",
-                    generateSlideEntry("cloud", "", 15, index)
+                    generateSlideEntry("cloud", "", 15, index, DEFAULT_FILTER_REGEX.source)
                 );
             })
             .catch((err) => {

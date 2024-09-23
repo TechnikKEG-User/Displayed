@@ -8,7 +8,9 @@
 
         "url": "URL",
         "timing": "Duration (sec)",
-
+        "filter": "File Filter (Regex)",
+        "filter_hint": "If a folder is selected,\n a regex filter can be applied to the whole path here.\n\n Alternative: Convert glob notation to regex?",
+        "filter_glob": "Enter a glob notation here to convert it to a regex filter.",
         "ask_delete": "Do you really want to delete this entry (type: {type})?\nTarget: {target}",
         "ask_delete_group": "Do you really want to delete the group '{name}'? This action is irreversible!",
 

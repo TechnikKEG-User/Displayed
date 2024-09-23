@@ -10,7 +10,7 @@ body {
 
     color: var(--text-color);
     background-color: var(--background-color);
-
+    --highlight-save-color: rgb(197, 201, 2);
     margin: 0;
     padding: 0;
 }
